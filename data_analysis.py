@@ -14,7 +14,7 @@ def mle_average(n, runs):
     mle_accuracies = []
     for i in range(runs):
         print("method: mle_average", "n:", n, "run:", i)
-        mle_accuracies.append(mle_accuracy(n, [0.15, 0.05])[1])
+        mle_accuracies.append(mle_accuracy(n, theta_star=np.array([1.5, 0.5]), initial_theta=np.array([1, 1]))[1])
     return sum(mle_accuracies) / len(mle_accuracies)
 
 
@@ -27,7 +27,7 @@ def scorematching_average(n, runs):
     scorematching_accuracies = []
     for i in range(runs):
         print("method: scorematching_average", "n:", n, "run:", i)
-        scorematching_accuracies.append(scorematching_accuracy(n, [0.15, 0.05])[1])
+        scorematching_accuracies.append(scorematching_accuracy(n, theta_star=np.array([1.5, 0.5]))[1])
     return sum(scorematching_accuracies) / len(scorematching_accuracies)
 
 
@@ -86,7 +86,7 @@ def best_fit(ns, mle_accuracies, scorematch_accuracies):
     plt.xlabel('log(sample size)')
     plt.ylabel('log(distance in parameter space)')
     #create a legend with correct colors:
-    plt.legend(['MLE', 'MLE best fit', 'Score Matching', 'Score Matching best fit'], loc='upper left')
+    plt.legend(['MLE', 'MLE best fit', 'Score Matching', 'Score Matching best fit'], loc='upper right')
     #show the plot
     plt.show()
 
@@ -99,8 +99,10 @@ def best_fit(ns, mle_accuracies, scorematch_accuracies):
 
 
 
-ns, mle_accuracies, scorematch_accuracies = generate_data_log_spacing(n_start=1000,
-                                                                      n_stop=100000,
-                                                                      num_ns=10,
-                                                                      runs=100)
-write_to_file(ns, mle_accuracies, scorematch_accuracies)
+#ns, mle_accuracies, scorematch_accuracies = generate_data_log_spacing(n_start=1000,
+#                                                                      n_stop=100000,
+#                                                                      num_ns=10,
+#                                                                      runs=100)
+#write_to_file(ns, mle_accuracies, scorematch_accuracies)
+ns, mle_accuracies, scorematch_accuracies = read_from_file()
+best_fit(ns, mle_accuracies, scorematch_accuracies)

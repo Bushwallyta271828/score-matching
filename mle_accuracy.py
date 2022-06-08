@@ -18,7 +18,9 @@ def normalize(thetas):
 def negative_log_likelihood(thetas, xs):
     #assert all thetas are positive:
     if np.any(thetas <= 0):
-        raise ValueError("thetas <= 0")
+        print("WARNING: theta <= 0")
+        #Note: sometimes minimize passes a theta with a negative element.
+        return 10**6 * (-np.min(thetas) + 1) #gradient should push in right direction
     Z = normalize(thetas)
     log_likelihood = np.sum(sufficient_statistics.sufficient_statistics(xs, thetas) - np.log(Z))
     return -log_likelihood
@@ -41,8 +43,8 @@ def mle_accuracy(n, theta_star, initial_theta):
 
 #xs = []
 #ys = []
-#for i in range(1,21):
-#    n = 10000*i
+#for i in range(1,101):
+#    n = 100*i
 #    print("n =", n)
 #    dist = mle_accuracy(n, np.array([1.5, 0.5]), np.array([1, 1]))[1]
 #    xs.append(n)
