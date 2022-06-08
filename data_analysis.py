@@ -8,13 +8,12 @@ import math
 def mle_average(n, runs):
     """
     Calculates the average MLE accuracy over a number of runs
-    :param n: number of trials
-    :param runs: number of runs
-    :return: average MLE accuracy
+    n: sample size per run
+    runs: number of runs
     """
     mle_accuracies = []
     for i in range(runs):
-        print("Run:", i, "n:", n, "method: mle_average")
+        print("method: mle_average", "n:", n, "run:", i)
         mle_accuracies.append(mle_accuracy(n, [0.15, 0.05])[1])
     return sum(mle_accuracies) / len(mle_accuracies)
 
@@ -22,13 +21,12 @@ def mle_average(n, runs):
 def scorematching_average(n, runs):
     """
     Calculates the average score matching accuracy over a number of runs
-    :param n: number of trials
-    :param runs: number of runs
-    :return: average score matching accuracy
+    n: sample size per run
+    runs: number of runs
     """
     scorematching_accuracies = []
     for i in range(runs):
-        print("Run:", i, "n:", n, "method: scorematching_average")
+        print("method: scorematching_average", "n:", n, "run:", i)
         scorematching_accuracies.append(scorematching_accuracy(n, [0.15, 0.05])[1])
     return sum(scorematching_accuracies) / len(scorematching_accuracies)
 
@@ -36,32 +34,20 @@ def scorematching_average(n, runs):
 def generate_data_log_spacing(n_start, n_stop, num_ns, runs):
     ns = np.exp(np.linspace(math.log(n_start), math.log(n_stop), num=num_ns))
     ns = ns.astype(int)
-    print("ns:", ns)
-    #vectorize the functions
-    mle_accuracies = np.vectorize(mle_average)
-    scorematch_accuracies = np.vectorize(scorematching_average)
-    #calculate the accuracies
-    mle_accuracies = mle_accuracies(ns, runs)
-    scorematch_accuracies = scorematch_accuracies(ns, runs)
+    mle_accuracies = np.array([mle_average(n, runs) for n in ns])
+    scorematch_accuracies = np.array([scorematching_average(n, runs) for n in ns])
     return (ns, mle_accuracies, scorematch_accuracies)
 
 
-def write_to_file(n_start, n_stop, datapoints, runs):
-    f = open('log_data.txt', 'w')
-    output = generate_log_data(n_start, n_stop, datapoints, runs)
-    ns = output[0]
-    mle_accuracies = output[1]
-    scorematch_accuracies = output[2]
+def write_to_file(ns, mle_accuracies, scorematch_accuracies, name='./results/log_data.txt'):
+    f = open(name, 'w')
     for i in range(len(ns)):
         f.write(str(ns[i]) + ' ' + str(mle_accuracies[i]) + ' ' + str(scorematch_accuracies[i]) + '\n')
     f.close()
 
 
-def read_from_file():
-    """
-    Reads the data from the file log_data.txt
-    """
-    f = open('log_data.txt', 'r')
+def read_from_file(name='./results/log_data.txt'):
+    f = open(name, 'r')
     ns = []
     mle_accuracies = []
     scorematch_accuracies = []
@@ -113,9 +99,8 @@ def best_fit(ns, mle_accuracies, scorematch_accuracies):
 
 
 
-#print(generate_data_log_spacing(10, 100, 10, 10))
-ns, mle_accuracies, scorematch_accuracies = generate_data_log_spacing(n_start=10,
-                                                                      n_stop=100,
+ns, mle_accuracies, scorematch_accuracies = generate_data_log_spacing(n_start=1000,
+                                                                      n_stop=100000,
                                                                       num_ns=10,
                                                                       runs=100)
-best_fit(ns, mle_accuracies, scorematch_accuracies)
+write_to_file(ns, mle_accuracies, scorematch_accuracies)
