@@ -52,5 +52,7 @@ def best_fit(ns, mle_accuracies, scorematch_accuracies):
     return (mle_slope, mle_intercept, scorematch_slope, scorematch_intercept)
 
 
-ns, mle_accuracies, scorematch_accuracies = read_from_file()
+#read filename from user input
+name = input("Enter filename: ")
+ns, mle_accuracies, scorematch_accuracies = read_from_file(name)
 best_fit(ns, mle_accuracies, scorematch_accuracies)

@@ -45,8 +45,16 @@ def write_to_file(ns, mle_accuracies, scorematch_accuracies, name='./results/log
     f.close()
 
 
-ns, mle_accuracies, scorematch_accuracies = generate_data_log_spacing(n_start=1000,
-                                                                      n_stop=100000,
-                                                                      num_ns=10,
-                                                                      runs=100)
-write_to_file(ns, mle_accuracies, scorematch_accuracies)
+n_start = 2000
+n_stop = 20000
+num_ns = 5
+runs = 10000
+output = generate_data_log_spacing(n_start=n_start, n_stop=n_stop, num_ns=num_ns, runs=runs)
+ns, mle_accuracies, scorematch_accuracies = output
+name = './results/log_data_'
+name += 'n_start_' + str(n_start)
+name += '_n_stop_' + str(n_stop)
+name += '_num_ns_' + str(num_ns)
+name += '_runs_' + str(runs)
+name += '.txt'
+write_to_file(ns, mle_accuracies, scorematch_accuracies, name=name)
