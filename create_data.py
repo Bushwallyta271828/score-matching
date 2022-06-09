@@ -4,30 +4,44 @@ import numpy as np
 import math
 
 
-def mle_average(n, runs):
+def mle_aggregate(n, runs, theta_star=np.array([1.5, 0.5]), initial_theta=np.array([1, 1])):
     """
     Calculates the average MLE accuracy over a number of runs
     n: sample size per run
     runs: number of runs
     """
     mle_accuracies = []
+    displacements = []
     for i in range(runs):
-        print("method: mle_average", "n:", n, "run:", i)
-        mle_accuracies.append(mle_accuracy(n, theta_star=np.array([1.5, 0.5]), initial_theta=np.array([1, 1]))[1])
-    return sum(mle_accuracies) / len(mle_accuracies)
+        print("method: mle_average", "n:", n, "theta_star:", theta_star, "run:", i)
+        mle_output = mle_accuracy(n, theta_star=theta_star, initial_theta=initial_theta)
+        displacements.append(mle_output[0] - theta_star)
+        mle_accuracies.append(mle_output[1])
+    displacements = np.array(displacements)
+    #fit 2d Gaussian to displacements
+    mu = np.mean(displacements, axis=0)
+    sigma = np.cov(displacements.T)
+    return sum(mle_accuracies) / len(mle_accuracies), (mu, sigma)
 
 
-def scorematching_average(n, runs):
+def scorematching_aggregate(n, runs, theta_star=np.array([1.5, 0.5])):
     """
     Calculates the average score matching accuracy over a number of runs
     n: sample size per run
     runs: number of runs
     """
     scorematching_accuracies = []
+    displacements = []
     for i in range(runs):
-        print("method: scorematching_average", "n:", n, "run:", i)
-        scorematching_accuracies.append(scorematching_accuracy(n, theta_star=np.array([1.5, 0.5]))[1])
-    return sum(scorematching_accuracies) / len(scorematching_accuracies)
+        print("method: scorematching_average", "n:", n, "theta_star:", theta_star, "run:", i)
+        scorematching_output = scorematching_accuracy(n, theta_star=theta_star)
+        displacements.append(scorematching_output[0] - theta_star)
+        scorematching_accuracies.append(scorematching_output[1])
+    displacements = np.array(displacements)
+    #fit 2d Gaussian to displacements
+    mu = np.mean(displacements, axis=0)
+    sigma = np.cov(displacements.T)
+    return sum(scorematching_accuracies) / len(scorematching_accuracies), (mu, sigma)
 
 
 def generate_data_log_spacing(n_start, n_stop, num_ns, runs):
