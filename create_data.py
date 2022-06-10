@@ -46,8 +46,8 @@ def generate_data_changing_theta_1(n, runs, theta_1_start, theta_1_stop, num_the
     methods = ['mle']*num_theta_1s + ['scorematching']*num_theta_1s
     ns = [n]*num_theta_1s*2
     runs = [runs]*num_theta_1s*2
-    theta_1_range = np.linspace(theta_1_start, theta_1_stop, num=num_theta_1s)
-    theta_star_range = [np.array([1, theta_1]) for theta_1 in theta_1_range]
+    theta_1_range = np.exp(np.linspace(math.log(theta_1_start), math.log(theta_1_stop), num=num_theta_1s))
+    theta_star_range = [np.array([1.0, theta_1]) for theta_1 in theta_1_range]
     theta_stars = theta_star_range + theta_star_range
     accuracies = []
     means = []
@@ -90,7 +90,12 @@ def generate_data_changing_theta_1(n, runs, theta_1_start, theta_1_stop, num_the
 #                np.array([1.0, 1.25]),
 #                np.array([1.0, 1.5])]
 
-#accuracies, means, covs = generate_data_changing_theta_1(n=2000, runs=100, theta_1_start=0.5, theta_1_stop=1.5, num_theta_1s=5)
-output = generate_data_changing_theta_1(n=2000, runs=2500, theta_1_start=0.5, theta_1_stop=1.5, num_theta_1s=5)
+#read from user input
+n = int(input("n: "))
+runs = int(input("runs: "))
+theta_1_start = float(input("theta_1_start: "))
+theta_1_stop = float(input("theta_1_stop: "))
+num_theta_1s = int(input("num_theta_1s: "))
+output = generate_data_changing_theta_1(n=n, runs=runs, theta_1_start=theta_1_start, theta_1_stop=theta_1_stop, num_theta_1s=num_theta_1s)
 methods, ns, runs, theta_stars, accuracies, means, covs = output
 write_to_file(methods, ns, runs, theta_stars, accuracies, means, covs)
