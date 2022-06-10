@@ -67,6 +67,8 @@ def graph_changing_theta1(methods, ns, runs, theta_stars, accuracies, means, cov
 
 def graph_ellipses(methods, ns, runs, theta_stars, accuracies, means, covs):
     ax = plt.gca()
+    drawn_mle = False
+    drawn_scorematch = False
     for i in range(len(methods)):
         eigvals, eigvecs = np.linalg.eigh(covs[i])
         orient = np.arctan2(eigvecs[:, 0][1], eigvecs[:, 0][0])
@@ -81,6 +83,12 @@ def graph_ellipses(methods, ns, runs, theta_stars, accuracies, means, covs):
                         width=2 * nsdt * np.sqrt(eigvals[0]),
                         height=2 * nsdt * np.sqrt(eigvals[1]),
                         angle=np.degrees(orient), color=color)
+        if methods[i] == "mle" and not drawn_mle:
+            ell.set_label('MLE')
+            drawn_mle = True
+        elif methods[i] == "scorematching" and not drawn_scorematch:
+            ell.set_label('Score Matching')
+            drawn_scorematch = True
         ax.add_artist(ell)
         ell.set_facecolor('none')
 
@@ -90,8 +98,7 @@ def graph_ellipses(methods, ns, runs, theta_stars, accuracies, means, covs):
     ax.set_ylim([0, 2])
     ax.set_xlabel('theta_0')
     ax.set_ylabel('theta_1')
-    #create a legend with correct colors:
-    plt.legend(loc='upper left')
+    ax.legend(loc='upper right')
     #show the plot
     plt.show()
 
