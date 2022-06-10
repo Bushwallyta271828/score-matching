@@ -38,34 +38,32 @@ def best_fit(ns, mle_accuracies, scorematch_accuracies):
     print("Score Matching intercept:", scorematch_intercept)
     return (mle_slope, mle_intercept, scorematch_slope, scorematch_intercept)
 
+
 def graph_changing_theta1(methods, ns, runs, theta_stars, accuracies, means, covs):
-    mle_accuracies = []
-    mle_theta_1s = []
-    scorematch_accuracies = []
-    scorematch_theta_1s = []
+    log_mle_accuracies = []
+    log_mle_theta_1s = []
+    log_scorematch_accuracies = []
+    log_scorematch_theta_1s = []
     for i in range(len(theta_stars)):
         if methods[i] == "mle":
-            mle_accuracies.append(np.log(accuracies[i]))
-            mle_theta_1s.append(theta_stars[i][1])
+            log_mle_accuracies.append(np.log(accuracies[i]))
+            log_mle_theta_1s.append(np.log(theta_stars[i][1]))
         elif methods[i] == "scorematching":
-            scorematch_accuracies.append(np.log(accuracies[i]))
-            scorematch_theta_1s.append(theta_stars[i][1])
+            log_scorematch_accuracies.append(np.log(accuracies[i]))
+            log_scorematch_theta_1s.append(np.log(theta_stars[i][1]))
         else:
             raise ValueError("Method not recognized")
     #plot the data:
-    plt.plot(mle_theta_1s, mle_accuracies, 'bo', label='MLE data')
-    plt.plot(scorematch_theta_1s, scorematch_accuracies, 'ro', label='Scorematch data')
+    plt.plot(log_mle_theta_1s, log_mle_accuracies, 'bo', label='MLE Data')
+    plt.plot(log_scorematch_theta_1s, log_scorematch_accuracies, 'ro', label='Score Matching Data')
     #label the axes:
-    plt.xlabel('theta_1')
+    plt.xlabel('log(theta_1)')
     plt.ylabel('log(accuracy)')
-    #create a legend with correct colors:
     plt.legend(loc='upper left')
-    #show the plot
     plt.show()
 
 
-
-def graph_ellipses(methods, ns, runs, theta_stars, accuracies, means, covs):
+def graph_ellipses(methods, ns, runs, theta_stars, accuracies, means, covs, xmin, xmax, ymin, ymax):
     ax = plt.gca()
     drawn_mle = False
     drawn_scorematch = False
@@ -94,8 +92,8 @@ def graph_ellipses(methods, ns, runs, theta_stars, accuracies, means, covs):
 
         ax.plot([theta_stars[i][0]], [theta_stars[i][1]], 'o', color='black')
 
-    ax.set_xlim([0, 2])
-    ax.set_ylim([0, 2])
+    ax.set_xlim([xmin, xmax])
+    ax.set_ylim([ymin, ymax])
     ax.set_xlabel('theta_0')
     ax.set_ylabel('theta_1')
     ax.legend(loc='upper right')
@@ -103,7 +101,16 @@ def graph_ellipses(methods, ns, runs, theta_stars, accuracies, means, covs):
     plt.show()
 
 
+#check whether user wants accuracy graph or ellipse graph:
 test_number = input("Enter test number: ")
 methods, ns, runs, theta_stars, accuracies, means, covs = read_from_file(test_number)
-#graph_changing_theta1(methods, ns, runs, theta_stars, accuracies, means, covs)
-graph_ellipses(methods, ns, runs, theta_stars, accuracies, means, covs)
+action = input("Would you like to graph the accuracy or the ellipse graph? (a/e) ")
+if action == "a":
+    graph_changing_theta1(methods, ns, runs, theta_stars, accuracies, means, covs)
+elif action == "e":
+    #get xlim and ylim:
+    xmin = float(input("Enter xmin: "))
+    xmax = float(input("Enter xmax: "))
+    ymin = float(input("Enter ymin: "))
+    ymax = float(input("Enter ymax: "))
+    graph_ellipses(methods, ns, runs, theta_stars, accuracies, means, covs, xmin, xmax, ymin, ymax)
