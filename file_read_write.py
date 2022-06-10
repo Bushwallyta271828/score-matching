@@ -7,6 +7,7 @@ def write_to_file(methods, ns, runs, theta_stars, accuracies, means, covs, test_
         #look in the directory ./results/ for the highest numbered file
         #and use that number + 1 for the test number
         #files are of the form test_number_i.txt
+        test_number = 1
         for file in os.listdir('./results/'):
             if file.startswith('test_number_'):
                 file_number = int(file.split('_')[2].split('.')[0])
