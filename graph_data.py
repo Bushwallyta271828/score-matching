@@ -1,24 +1,9 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from file_read_write import read_from_file
 
 
-def read_from_file(name='./results/log_data.txt'):
-    f = open(name, 'r')
-    ns = []
-    mle_accuracies = []
-    scorematch_accuracies = []
-    for line in f:
-        line = line.split()
-        ns.append(int(line[0]))
-        mle_accuracies.append(float(line[1]))
-        scorematch_accuracies.append(float(line[2]))
-    f.close()
-    ns = np.array(ns, dtype=int)
-    mle_accuracies = np.array(mle_accuracies, dtype=float)
-    scorematch_accuracies = np.array(scorematch_accuracies, dtype=float)
-    return (ns, mle_accuracies, scorematch_accuracies)
-
-
+#Old code:
 def best_fit(ns, mle_accuracies, scorematch_accuracies):
     """
     Finds the best fit line for the output from log_log_plot
@@ -51,8 +36,32 @@ def best_fit(ns, mle_accuracies, scorematch_accuracies):
     print("Score Matching intercept:", scorematch_intercept)
     return (mle_slope, mle_intercept, scorematch_slope, scorematch_intercept)
 
+def graph_changing_theta1(methods, ns, runs, theta_stars, accuracies, means, covs):
+    mle_accuracies = []
+    mle_theta_1s = []
+    scorematch_accuracies = []
+    scorematch_theta_1s = []
+    for i in range(len(theta_stars)):
+        if methods[i] == "mle":
+            mle_accuracies.append(accuracies[i])
+            mle_theta_1s.append(theta_stars[i][1])
+        elif methods[i] == "scorematching":
+            scorematch_accuracies.append(accuracies[i])
+            scorematch_theta_1s.append(theta_stars[i][1])
+        else:
+            raise ValueError("Method not recognized")
+    #plot the data:
+    plt.plot(mle_theta_1s, mle_accuracies, c='b', label='MLE data')
+    plt.plot(scorematch_theta_1s, scorematch_accuracies, c='r', label='Scorematch data')
+    #label the axes:
+    plt.xlabel('theta_1')
+    plt.ylabel('accuracy')
+    #create a legend with correct colors:
+    plt.legend(loc='upper right')
+    #show the plot
+    plt.show()
 
-#read filename from user input
-name = input("Enter filename: ")
-ns, mle_accuracies, scorematch_accuracies = read_from_file(name)
-best_fit(ns, mle_accuracies, scorematch_accuracies)
+
+test_number = input("Enter test number: ")
+methods, ns, runs, theta_stars, accuracies, means, covs = read_from_file(test_number)
+graph_changing_theta1(methods, ns, runs, theta_stars, accuracies, means, covs)
