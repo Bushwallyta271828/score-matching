@@ -10,8 +10,9 @@ def write_to_file(methods, ns, runs, theta_stars, accuracies, means, covs, test_
         test_number = 1
         for file in os.listdir('./results/'):
             if file.startswith('test_number_'):
-                file_number = int(file.split('_')[2].split('.')[0])
-                test_number = max(file_number + 1, test_number)
+                if file.split('_')[2].split('.')[0].isdigit():
+                    file_number = int(file.split('_')[2].split('.')[0])
+                    test_number = max(file_number + 1, test_number)
     filename = './results/test_number_' + str(test_number) + '.txt'
     f = open(filename, 'w')
     for i in range(len(methods)):
@@ -33,7 +34,9 @@ def read_from_file(test_number=None):
         #files are of the form test_number_i.txt
         for file in os.listdir('./results/'):
             if file.startswith('test_number_'):
-                test_number = max(int(file.split('_')[2].split('.')[0]), test_number)
+                if file.split('_')[2].split('.')[0].isdigit():
+                    file_number = int(file.split('_')[2].split('.')[0])
+                    test_number = max(file_number, test_number)
     filename = './results/test_number_' + str(test_number) + '.txt'
     f = open(filename, 'r')
     lines = f.readlines()
