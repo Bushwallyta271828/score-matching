@@ -4,7 +4,7 @@ import numpy as np
 import math
 
 
-def mle_aggregate(n, runs, theta_star=np.array([1.5, 0.5]), initial_theta=np.array([1, 1])):
+def mle_aggregate(n, runs, theta_star=np.array([1.5, 0.5])):
     """
     Calculates the average MLE accuracy over a number of runs
     n: sample size per run
@@ -14,7 +14,10 @@ def mle_aggregate(n, runs, theta_star=np.array([1.5, 0.5]), initial_theta=np.arr
     displacements = []
     for i in range(runs):
         print("method: mle_average", "n:", n, "theta_star:", theta_star, "run:", i)
-        mle_output = mle_accuracy(n, theta_star=theta_star, initial_theta=initial_theta)
+        mle_output = mle_accuracy(n, theta_star=theta_star, initial_theta=theta_star)
+        #Note: setting initial_theta to theta_star is questionable
+        #but mle_accuracy seems to focus enough on actually maximizing the liklihood
+        #that I trust it not to just exit on the first iteration or something.
         displacements.append(mle_output[0] - theta_star)
         mle_accuracies.append(mle_output[1])
     displacements = np.array(displacements)
@@ -44,12 +47,18 @@ def scorematching_aggregate(n, runs, theta_star=np.array([1.5, 0.5])):
     return sum(scorematching_accuracies) / len(scorematching_accuracies), (mu, sigma)
 
 
-def generate_data_log_spacing(n_start, n_stop, num_ns, runs):
-    ns = np.exp(np.linspace(math.log(n_start), math.log(n_stop), num=num_ns))
-    ns = ns.astype(int)
-    mle_accuracies = np.array([mle_average(n, runs) for n in ns])
-    scorematch_accuracies = np.array([scorematching_average(n, runs) for n in ns])
-    return (ns, mle_accuracies, scorematch_accuracies)
+#def generate_data_log_spacing(n_start, n_stop, num_ns, runs):
+#    ns = np.exp(np.linspace(math.log(n_start), math.log(n_stop), num=num_ns))
+#    ns = ns.astype(int)
+#    mle_accuracies = np.array([mle_average(n, runs) for n in ns])
+#    scorematch_accuracies = np.array([scorematching_average(n, runs) for n in ns])
+#    return (ns, mle_accuracies, scorematch_accuracies)
+
+
+def generate_data_changing_theta_1(n, runs, theta_1_start, theta_1_stop, num_theta_1s):
+    theta_1s = np.linspace(theta_1_start, theta_1_stop, num=num_theta_1s)
+    thetas = np.array([np.ones(num_theta_1s), theta_1s]).T
+
 
 
 def write_to_file(ns, mle_accuracies, scorematch_accuracies, name='./results/log_data.txt'):
