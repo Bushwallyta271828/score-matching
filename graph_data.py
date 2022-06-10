@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from file_read_write import read_from_file
+from matplotlib.patches import Ellipse
+
 
 
 #Old code:
@@ -62,6 +64,39 @@ def graph_changing_theta1(methods, ns, runs, theta_stars, accuracies, means, cov
     plt.show()
 
 
+
+def graph_ellipses(methods, ns, runs, theta_stars, accuracies, means, covs):
+    ax = plt.gca()
+    for i in range(len(methods)):
+        eigvals, eigvecs = np.linalg.eigh(covs[i])
+        orient = np.arctan2(eigvecs[:, 0][1], eigvecs[:, 0][0])
+        nsdt = 1
+        if methods[i] == "mle":
+            color = 'b'
+        elif methods[i] == "scorematching":
+            color = 'r'
+        else:
+            raise ValueError("Method not recognized")
+        ell = Ellipse(xy=means[i] + theta_stars[i],
+                        width=2 * nsdt * np.sqrt(eigvals[0]),
+                        height=2 * nsdt * np.sqrt(eigvals[1]),
+                        angle=np.degrees(orient), color=color)
+        ax.add_artist(ell)
+        ell.set_facecolor('none')
+
+        ax.plot([theta_stars[i][0]], [theta_stars[i][1]], 'o', color='black')
+
+    ax.set_xlim([0, 2])
+    ax.set_ylim([0, 2])
+    ax.set_xlabel('theta_0')
+    ax.set_ylabel('theta_1')
+    #create a legend with correct colors:
+    plt.legend(loc='upper left')
+    #show the plot
+    plt.show()
+
+
 test_number = input("Enter test number: ")
 methods, ns, runs, theta_stars, accuracies, means, covs = read_from_file(test_number)
-graph_changing_theta1(methods, ns, runs, theta_stars, accuracies, means, covs)
+#graph_changing_theta1(methods, ns, runs, theta_stars, accuracies, means, covs)
+graph_ellipses(methods, ns, runs, theta_stars, accuracies, means, covs)
