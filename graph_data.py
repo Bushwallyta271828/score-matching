@@ -43,21 +43,21 @@ def graph_changing_theta1(methods, ns, runs, theta_stars, accuracies, means, cov
     scorematch_theta_1s = []
     for i in range(len(theta_stars)):
         if methods[i] == "mle":
-            mle_accuracies.append(accuracies[i])
+            mle_accuracies.append(np.log(accuracies[i]))
             mle_theta_1s.append(theta_stars[i][1])
         elif methods[i] == "scorematching":
-            scorematch_accuracies.append(accuracies[i])
+            scorematch_accuracies.append(np.log(accuracies[i]))
             scorematch_theta_1s.append(theta_stars[i][1])
         else:
             raise ValueError("Method not recognized")
     #plot the data:
-    plt.plot(mle_theta_1s, mle_accuracies, c='b', label='MLE data')
-    plt.plot(scorematch_theta_1s, scorematch_accuracies, c='r', label='Scorematch data')
+    plt.plot(mle_theta_1s, mle_accuracies, 'bo', label='MLE data')
+    plt.plot(scorematch_theta_1s, scorematch_accuracies, 'ro', label='Scorematch data')
     #label the axes:
     plt.xlabel('theta_1')
-    plt.ylabel('accuracy')
+    plt.ylabel('log(accuracy)')
     #create a legend with correct colors:
-    plt.legend(loc='upper right')
+    plt.legend(loc='upper left')
     #show the plot
     plt.show()
 

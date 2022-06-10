@@ -91,6 +91,6 @@ def generate_data_changing_theta_1(n, runs, theta_1_start, theta_1_stop, num_the
 #                np.array([1.0, 1.5])]
 
 #accuracies, means, covs = generate_data_changing_theta_1(n=2000, runs=100, theta_1_start=0.5, theta_1_stop=1.5, num_theta_1s=5)
-output = generate_data_changing_theta_1(n=2000, runs=100, theta_1_start=0.5, theta_1_stop=1.5, num_theta_1s=5)
+output = generate_data_changing_theta_1(n=2000, runs=2500, theta_1_start=0.5, theta_1_stop=1.5, num_theta_1s=5)
 methods, ns, runs, theta_stars, accuracies, means, covs = output
 write_to_file(methods, ns, runs, theta_stars, accuracies, means, covs)
