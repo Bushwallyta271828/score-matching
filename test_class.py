@@ -1,10 +1,10 @@
 import numpy as np
-from sufficient_statistics import SuffStatsParameters
+from sufficient_statistics import SuffStatParameters
 
 
 class TestParameters:
     def __init__(self, suffparams, theta_star, n, method, runs):
-        self.suffparams = suffparams #instance of SuffStatsParameters
+        self.suffparams = suffparams #list of SuffStatParameters
         self.theta_star = theta_star #1d np.array
         self.n = n #int
         self.method = method #string
