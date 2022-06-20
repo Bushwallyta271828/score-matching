@@ -7,67 +7,52 @@ import numpy as np
 #This form is necessary for rejection sampling.
 
 
-class SuffStatParams:
+class SuffStat:
+    def __init__(self, zeroth_derivative, first_derivative, second_derivative):
+        self.zeroth_derivative = zeroth_derivative
+        self.first_derivative = first_derivative
+        self.second_derivative = second_derivative
+
+
+class FirstStat(SuffStat):
     def __init__(self):
         pass
 
+    def zeroth_derivative(self, xs):
+        return -xs**2 / 2
 
-class PolyParams(SuffStatParams):
+    def first_derivative(self, xs):
+        return -xs
+
+    def second_derivative(self, xs):
+        return -np.ones(xs.shape)
+
+
+class PolyStat(SuffStat):
     def __init__(self, exponent):
         self.exponent = exponent
 
+    def zeroth_derivative(self, xs):
+        return -xs**self.exponent
 
-class SinusoidParams(SuffStatParams):
+    def first_derivative(self, xs):
+        return -self.exponent * xs**(self.exponent - 1)
+
+    def second_derivative(self, xs):
+        return -self.exponent * (self.exponent - 1) * xs**(self.exponent - 2)
+
+
+class SinusoidStat(SuffStat):
     def __init__(self, amplitude, frequency, phase):
         self.amplitude = amplitude
         self.frequency = frequency
         self.phase = phase
 
+    def zeroth_derivative(self, xs):
+        return self.amplitude * (np.sin(self.frequency * xs + self.phase) - 1)
 
-def later_sufficient_statistics(xs, later_thetas, params):
-    #later_thetas is a column vector
-    #xs is a column vector
-    #params is a list of objects of type SuffStatParams
-    later_suff_stats_list = []
-    for i in range(len(params)):
-        if isinstance(params[i], PolyParams):
-            later_suff_stat = -xs**params[i].exponent
-        elif isinstance(params[i], SinusoidParams):
-            raise NotImplementedError
-            #later_suff_stat = params[i].amplitude * (np.sin(params[i].frequency * xs + params[i].phase) - 1)
-        else:
-            raise ValueError("params[i] is not a recognized type")
-        later_suff_stats_list.append(later_suff_stat)
-    later_suff_stats = np.array(later_suff_stats_list)
-    return np.dot(np.transpose(later_suff_stats), later_thetas)
+    def first_derivative(self, xs):
+        return self.amplitude * self.frequency * np.cos(self.frequency * xs + self.phase)
 
-
-def later_first_derivatives(xs, params):
-    #works because xs is one-dimensional.
-    #used for scorematching
-
-
-def later_second_derivatives(xs, params):
-    #works because xs is one-dimensional.
-    #used for scorematching
-
-
-def sufficient_statistics(xs, thetas, params):
-    #thetas is a column vector
-    #xs is a column vector
-    #params is a list of objects of type SuffStatParams
-    gaussian = thetas[0] * (-xs*xs / 2)
-    later = later_sufficient_statistics(xs, thetas[1:], params)
-    return gaussian + later
-
-
-def first_derivatives(xs):
-    #works because xs is one-dimensional.
-    #used for scorematching
-    return np.array([-xs, -4*xs*xs*xs])
-
-
-def second_derivatives(xs):
-    #works because xs is one-dimensional.
-    #used for scorematching
-    return np.array([-1*np.ones(xs.shape), -12*xs*xs])
+    def second_derivative(self, xs):
+        return -self.amplitude * self.frequency**2 * np.sin(self.frequency * xs + self.phase)
