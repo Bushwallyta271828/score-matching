@@ -56,3 +56,4 @@ class SinusoidStat(SuffStat):
 
     def second_derivative(self, xs):
         return -self.amplitude * self.frequency**2 * np.sin(self.frequency * xs + self.phase)
+
