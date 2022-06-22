@@ -12,17 +12,14 @@ def aggregate(test_parameters):
     displacements = []
     for i in range(test_parameters.runs):
         print("method:", test_parameters.method,
-                "suffstats:", test_parameters.suffstats,
+                "suffstats:", [str(suffstat) for suffstat in test_parameters.suffstats],
                 "n:", test_parameters.n,
                 "theta_star:", test_parameters.theta_star,
                 "run:", i)
         if method == 'mle':
-            output = mle_accuracy(n, theta_star=theta_star, initial_theta=theta_star)
-            #Note: setting initial_theta to theta_star is questionable
-            #but mle_accuracy seems to focus enough on actually maximizing the liklihood
-            #that I trust it not to just exit on the first iteration or something.
+            output = mle_accuracy(test_parameters)
         elif method == 'scorematching':
-            output = scorematching_accuracy(n, theta_star=theta_star)
+            output = scorematching_accuracy(test_parameters)
         else:
             raise ValueError('method must be either mle or scorematching')
         displacements.append(output[0] - theta_star)
@@ -31,7 +28,8 @@ def aggregate(test_parameters):
     #fit 2d Gaussian to displacements
     mu = np.mean(displacements, axis=0)
     sigma = np.cov(displacements.T)
-    return sum(accuracies) / len(accuracies), (mu, sigma)
+    results = TestResults(accuracy=sum(accuracies)/len(accuracies), mean=mu, cov=sigma)
+    return results
 
 
 #Old code:
