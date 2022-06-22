@@ -57,3 +57,19 @@ class SinusoidStat(SuffStat):
     def second_derivative(self, xs):
         return -self.amplitude * self.frequency**2 * np.sin(self.frequency * xs + self.phase)
 
+
+def zeroth_derivatives(suff_stats, xs):
+    #suff_stats is a list of SuffStats
+    #xs is a 1d numpy array
+    return np.array([stat.zeroth_derivative(xs) for stat in suff_stats])
+
+def first_derivatives(suff_stats, xs):
+    #suff_stats is a list of SuffStats
+    #xs is a 1d numpy array
+    return np.array([stat.first_derivative(xs) for stat in suff_stats])
+
+def second_derivatives(suff_stats, xs):
+    #suff_stats is a list of SuffStats
+    #xs is a 1d numpy array
+    return np.array([stat.second_derivative(xs) for stat in suff_stats])
+
