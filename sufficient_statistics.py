@@ -13,10 +13,16 @@ class SuffStat:
         self.first_derivative = first_derivative
         self.second_derivative = second_derivative
 
+    def __str__(self):
+        pass
+
 
 class FirstStat(SuffStat):
     def __init__(self):
         pass
+
+    def __str__(self):
+        return "FirstStat"
 
     def zeroth_derivative(self, xs):
         return -xs**2 / 2
@@ -31,6 +37,9 @@ class FirstStat(SuffStat):
 class PolyStat(SuffStat):
     def __init__(self, exponent):
         self.exponent = exponent
+
+    def __str__(self):
+        return "PolyStat(exponent={})".format(self.exponent)
 
     def zeroth_derivative(self, xs):
         return -xs**self.exponent
@@ -47,6 +56,9 @@ class SinusoidStat(SuffStat):
         self.amplitude = amplitude
         self.frequency = frequency
         self.phase = phase
+
+    def __str__(self):
+        return "SinusoidStat(amplitude={}, frequency={}, phase={})".format(self.amplitude, self.frequency, self.phase)
 
     def zeroth_derivative(self, xs):
         return self.amplitude * (np.sin(self.frequency * xs + self.phase) - 1)

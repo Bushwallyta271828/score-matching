@@ -1,15 +1,21 @@
 import numpy as np
 import math
+import test_class
 from mle_accuracy import mle_accuracy
 from scorematching_accuracy import scorematching_accuracy
 from file_read_write import write_to_file
 
 
-def aggregate(method, n, runs, theta_star):
+def aggregate(test_parameters):
+    #test_parameters is of type test_class.TestParameters
     accuracies = []
     displacements = []
-    for i in range(runs):
-        print("method:", method, "n:", n, "theta_star:", theta_star, "run:", i)
+    for i in range(test_parameters.runs):
+        print("method:", test_parameters.method,
+                "suffstats:", test_parameters.suffstats,
+                "n:", test_parameters.n,
+                "theta_star:", test_parameters.theta_star,
+                "run:", i)
         if method == 'mle':
             output = mle_accuracy(n, theta_star=theta_star, initial_theta=theta_star)
             #Note: setting initial_theta to theta_star is questionable
