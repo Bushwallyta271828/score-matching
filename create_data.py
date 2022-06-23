@@ -32,7 +32,7 @@ def aggregate(test_parameters):
     return results
 
 
-#Old code:
+#Old old code:
 #def generate_data_log_spacing(n_start, n_stop, num_ns, runs):
 #    ns = np.exp(np.linspace(math.log(n_start), math.log(n_stop), num=num_ns))
 #    ns = ns.astype(int)
@@ -45,13 +45,31 @@ def aggregate(test_parameters):
 #    theta_1s = np.linspace(theta_1_start, theta_1_stop, num=num_theta_1s)
 #    thetas = np.array([np.ones(num_theta_1s), theta_1s]).T
 
+#Old code:
+#def generate_data_changing_theta_1(n, runs, theta_1_start, theta_1_stop, num_theta_1s):
+#    methods = ['mle']*num_theta_1s + ['scorematching']*num_theta_1s
+#    ns = [n]*num_theta_1s*2
+#    runs = [runs]*num_theta_1s*2
+#    theta_1_range = np.exp(np.linspace(math.log(theta_1_start), math.log(theta_1_stop), num=num_theta_1s))
+#    theta_star_range = [np.array([1.0, theta_1]) for theta_1 in theta_1_range]
+#    theta_stars = theta_star_range + theta_star_range
+#    accuracies = []
+#    means = []
+#    covs = []
+#    for i in range(len(methods)):
+#        output = aggregate(methods[i], ns[i], runs[i], theta_stars[i])
+#        accuracies.append(output[0])
+#        means.append(output[1][0])
+#        covs.append(output[1][1])
+#    return (methods, ns, runs, theta_stars, accuracies, means, covs)
 
-def generate_data_changing_theta_1(n, runs, theta_1_start, theta_1_stop, num_theta_1s):
-    methods = ['mle']*num_theta_1s + ['scorematching']*num_theta_1s
-    ns = [n]*num_theta_1s*2
-    runs = [runs]*num_theta_1s*2
-    theta_1_range = np.exp(np.linspace(math.log(theta_1_start), math.log(theta_1_stop), num=num_theta_1s))
-    theta_star_range = [np.array([1.0, theta_1]) for theta_1 in theta_1_range]
+
+def generate_data_changing_exponent(n, runs, exponent_start, exponent_stop, num_exponents):
+    methods = ['mle']*num_exponents + ['scorematching']*num_exponents
+    ns = [n]*num_exponents*2
+    runs = [runs]*num_exponents*2
+    exponent_range = np.linspace(exponent_start, exponent_stop, num=num_exponents)
+    theta_star_range = [np.array([1.0, math.exp(exponent)]) for exponent in exponent_range]
     theta_stars = theta_star_range + theta_star_range
     accuracies = []
     means = []
@@ -62,7 +80,6 @@ def generate_data_changing_theta_1(n, runs, theta_1_start, theta_1_stop, num_the
         means.append(output[1][0])
         covs.append(output[1][1])
     return (methods, ns, runs, theta_stars, accuracies, means, covs)
-
 
 
 
