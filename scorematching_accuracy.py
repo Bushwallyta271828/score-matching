@@ -9,7 +9,7 @@ def scorematching(test_parameters):
     #test is of type test_class.TestParameters
 
     #assert all thetas are positive:
-    assert(np.all(test_parameters.theta >= 0))
+    assert(np.all(test_parameters.theta_star >= 0))
     samples = sample.sample(test_parameters)
 
     first = sufficient_statistics.first_derivatives(test_parameters.suffstats, samples).T

@@ -30,7 +30,7 @@ def negative_log_likelihood(thetas, suffstats, xs):
     return -log_likelihood
 
 
-def mle_accuracy(test_parameters):
+def mle(test_parameters):
     #test_parameters is of type test_class.TestParameters
     assert(test_parameters.method == "mle")
     assert(np.all(test_parameters.theta_star >= 0))
@@ -41,7 +41,7 @@ def mle_accuracy(test_parameters):
                             test_parameters.theta_star,
                             args=(test_parameters.suffstats, samples),
                             bounds=bounds).x
-    dist = np.sqrt(np.sum((MLE_answer - theta_star)**2))
+    dist = np.sqrt(np.sum((MLE_answer - test_parameters.theta_star)**2))
     return (MLE_answer, dist)
 
 

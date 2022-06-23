@@ -36,6 +36,9 @@ class FirstStat(SuffStat):
 
 class PolyStat(SuffStat):
     def __init__(self, exponent):
+        #assert(type(exponent) == int) #Note: problems because actually it's numpy.int32, mod requirement below largely covers this.
+        assert(exponent % 2 == 0)
+        assert(exponent >= 4) #can't be 2 because scorematching can't distinguish from FirstStat
         self.exponent = exponent
 
     def __str__(self):

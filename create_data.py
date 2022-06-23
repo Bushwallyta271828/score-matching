@@ -1,9 +1,10 @@
 import numpy as np
 import math
 import test_class
-from mle_accuracy import mle_accuracy
-from scorematching_accuracy import scorematching_accuracy
+from mle_accuracy import mle
+from scorematching_accuracy import scorematching
 from file_read_write import write_to_file
+import sufficient_statistics
 
 
 def aggregate(test_parameters):
@@ -16,19 +17,19 @@ def aggregate(test_parameters):
                 "n:", test_parameters.n,
                 "theta_star:", test_parameters.theta_star,
                 "run:", i)
-        if method == 'mle':
-            output = mle_accuracy(test_parameters)
-        elif method == 'scorematching':
-            output = scorematching_accuracy(test_parameters)
+        if test_parameters.method == 'mle':
+            output = mle(test_parameters)
+        elif test_parameters.method == 'scorematching':
+            output = scorematching(test_parameters)
         else:
             raise ValueError('method must be either mle or scorematching')
-        displacements.append(output[0] - theta_star)
+        displacements.append(output[0] - test_parameters.theta_star)
         accuracies.append(output[1])
     displacements = np.array(displacements)
     #fit 2d Gaussian to displacements
     mu = np.mean(displacements, axis=0)
     sigma = np.cov(displacements.T)
-    results = TestResults(accuracy=sum(accuracies)/len(accuracies), mean=mu, cov=sigma)
+    results = test_class.TestResults(accuracy=sum(accuracies)/len(accuracies), mean=mu, cov=sigma)
     return results
 
 
@@ -65,22 +66,15 @@ def aggregate(test_parameters):
 
 
 def generate_data_changing_exponent(n, runs, exponent_start, exponent_stop, num_exponents):
-    methods = ['mle']*num_exponents + ['scorematching']*num_exponents
-    ns = [n]*num_exponents*2
-    runs = [runs]*num_exponents*2
-    exponent_range = np.linspace(exponent_start, exponent_stop, num=num_exponents)
-    theta_star_range = [np.array([1.0, math.exp(exponent)]) for exponent in exponent_range]
-    theta_stars = theta_star_range + theta_star_range
-    accuracies = []
-    means = []
-    covs = []
-    for i in range(len(methods)):
-        output = aggregate(methods[i], ns[i], runs[i], theta_stars[i])
-        accuracies.append(output[0])
-        means.append(output[1][0])
-        covs.append(output[1][1])
-    return (methods, ns, runs, theta_stars, accuracies, means, covs)
-
+    tests = []
+    for method in ['mle', 'scorematching']:
+        for exponent in np.linspace(exponent_start, exponent_stop, num=num_exponents, dtype=int):
+            suffstats = [sufficient_statistics.FirstStat(), sufficient_statistics.PolyStat(exponent)]
+            test_parameters = test_class.TestParameters(suffstats, np.array([1.0, 1.0]), n, method, runs)
+            test_results = aggregate(test_parameters)
+            test = test_class.Test(test_parameters, test_results)
+            tests.append(test)
+    return tests
 
 
 #n_start = 2000
@@ -111,12 +105,23 @@ def generate_data_changing_exponent(n, runs, exponent_start, exponent_stop, num_
 #                np.array([1.0, 1.25]),
 #                np.array([1.0, 1.5])]
 
+#Old code:
+##read from user input
+#n = int(input("n: "))
+#runs = int(input("runs: "))
+#theta_1_start = float(input("theta_1_start: "))
+#theta_1_stop = float(input("theta_1_stop: "))
+#num_theta_1s = int(input("num_theta_1s: "))
+#output = generate_data_changing_theta_1(n=n, runs=runs, theta_1_start=theta_1_start, theta_1_stop=theta_1_stop, num_theta_1s=num_theta_1s)
+#methods, ns, runs, theta_stars, accuracies, means, covs = output
+#write_to_file(methods, ns, runs, theta_stars, accuracies, means, covs)
+
+#New code:
 #read from user input
 n = int(input("n: "))
 runs = int(input("runs: "))
-theta_1_start = float(input("theta_1_start: "))
-theta_1_stop = float(input("theta_1_stop: "))
-num_theta_1s = int(input("num_theta_1s: "))
-output = generate_data_changing_theta_1(n=n, runs=runs, theta_1_start=theta_1_start, theta_1_stop=theta_1_stop, num_theta_1s=num_theta_1s)
-methods, ns, runs, theta_stars, accuracies, means, covs = output
-write_to_file(methods, ns, runs, theta_stars, accuracies, means, covs)
+exponent_start = float(input("exponent_start: "))
+exponent_stop = float(input("exponent_stop: "))
+num_exponents = int(input("num_exponents: "))
+tests = generate_data_changing_exponent(n=n, runs=runs, exponent_start=exponent_start, exponent_stop=exponent_stop, num_exponents=num_exponents)
+write_to_file(tests)
