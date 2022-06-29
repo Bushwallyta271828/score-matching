@@ -7,7 +7,7 @@ from file_read_write import write_to_file
 import sufficient_statistics
 
 
-def aggregate(test_parameters):
+def parameters_to_results(test_parameters):
     #test_parameters is of type test_class.TestParameters
     accuracies = []
     displacements = []
@@ -31,6 +31,18 @@ def aggregate(test_parameters):
     sigma = np.cov(displacements.T)
     results = test_class.TestResults(accuracy=sum(accuracies)/len(accuracies), mean=mu, cov=sigma)
     return results
+
+
+def run_tests(parameters_for_tests):
+    #parameters_for_tests is a list of test_class.TestParameters
+    #returns a list of test_class.Test
+    tests = []
+    for test_parameters in parameters_for_tests:
+        test_results = parameters_to_results(test_parameters)
+        test = test_class.Test(test_parameters, test_results)
+        tests.append(test)
+    return tests
+
 
 
 #Old old code:
@@ -65,16 +77,43 @@ def aggregate(test_parameters):
 #    return (methods, ns, runs, theta_stars, accuracies, means, covs)
 
 
-def generate_data_changing_exponent(n, runs, exponent_start, exponent_stop, num_exponents):
-    tests = []
+def changing_exponent_parameters():
+    #collect inputs from user:
+    n = int(input("Enter n: "))
+    runs = int(input("Enter runs: "))
+    exponent_start = float(input("Enter exponent start: "))
+    exponent_stop = float(input("Enter exponent stop: "))
+    num_exponents = int(input("Enter number of exponents: "))
+    
+    #generate parameters:
+    exponents = np.exp(np.linspace(math.log(exponent_start), math.log(exponent_stop), num=num_exponents))
+    exponents = 2 * (exponents / 2).astype(int)
+    exponents = np.maximum(exponents, 4)
+
+    parameters_for_tests = []
     for method in ['mle', 'scorematching']:
-        for exponent in np.linspace(exponent_start, exponent_stop, num=num_exponents, dtype=int):
+        for exponent in exponents:        
             suffstats = [sufficient_statistics.FirstStat(), sufficient_statistics.PolyStat(exponent)]
-            test_parameters = test_class.TestParameters(suffstats, np.array([1.0, 1.0]), n, method, runs)
-            test_results = aggregate(test_parameters)
-            test = test_class.Test(test_parameters, test_results)
-            tests.append(test)
-    return tests
+            parameters_for_tests.append(test_class.TestParameters(suffstats, np.array([1.0, 1.0]), n, method, runs))
+    return parameters_for_tests
+
+
+def asymptotic_test_parameters():
+    exponent = int(input("Enter exponent: "))
+    runs = int(input("Enter runs: "))
+    start_n = int(input("Enter start n: "))
+    stop_n = int(input("Enter stop n: "))
+    num_ns = int(input("Enter number of ns: "))
+
+    ns = np.exp(np.linspace(math.log(start_n), math.log(stop_n), num=num_ns))
+    ns = ns.astype(int)
+
+    parameters_for_tests = []
+    for method in ['mle', 'scorematching']:
+        for n in ns:
+            suffstats = [sufficient_statistics.FirstStat(), sufficient_statistics.PolyStat(exponent)]
+            parameters_for_tests.append(test_class.TestParameters(suffstats, np.array([1.0, 1.0]), n, method, runs))
+    return parameters_for_tests
 
 
 #n_start = 2000
@@ -116,12 +155,16 @@ def generate_data_changing_exponent(n, runs, exponent_start, exponent_stop, num_
 #methods, ns, runs, theta_stars, accuracies, means, covs = output
 #write_to_file(methods, ns, runs, theta_stars, accuracies, means, covs)
 
-#New code:
-#read from user input
-n = int(input("n: "))
-runs = int(input("runs: "))
-exponent_start = float(input("exponent_start: "))
-exponent_stop = float(input("exponent_stop: "))
-num_exponents = int(input("num_exponents: "))
-tests = generate_data_changing_exponent(n=n, runs=runs, exponent_start=exponent_start, exponent_stop=exponent_stop, num_exponents=num_exponents)
+##New code:
+##read from user input
+#n = int(input("n: "))
+#runs = int(input("runs: "))
+#exponent_start = float(input("exponent_start: "))
+#exponent_stop = float(input("exponent_stop: "))
+#num_exponents = int(input("num_exponents: "))
+#tests = generate_data_changing_exponent(n=n, runs=runs, exponent_start=exponent_start, exponent_stop=exponent_stop, num_exponents=num_exponents)
+#write_to_file(tests)
+
+parameters_for_tests = asymptotic_test_parameters()
+tests = run_tests(parameters_for_tests)
 write_to_file(tests)
