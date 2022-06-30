@@ -103,7 +103,15 @@ import sufficient_statistics
 #    plt.show()
 
 
-def graph_changing_exponent(tests):
+def accuracy_vs_n(tests):
+    raise NotImplementedError
+
+
+def accuracy_vs_theta1(tests):
+    raise NotImplementedError
+
+
+def accuracy_vs_exponent(tests):
     #tests is a list of test_class.Test objects
     log_mle_accuracies = []
     log_mle_exponents = []
@@ -128,15 +136,28 @@ def graph_changing_exponent(tests):
     plt.show()
 
 
+def ellipses_vs_n(tests):
+    raise NotImplementedError
+
+
+def ellipses_vs_theta1(tests):
+    raise NotImplementedError
+
+
+def ellipses_vs_exponent(tests):
+    raise NotImplementedError
+
+
 def query_user():
     test_number = input("Enter test number: ")
     tests = read_from_file(test_number)
     query_string = "What would you like to do?\n"
-    query_string += "1. Fit changing n to asymptotic regime\n"
+    query_string += "1. Graph accuracy vs. n\n"
     query_string += "2. Graph accuracy vs. theta_1\n"
     query_string += "3. Graph accuracy vs. exponent\n"
-    query_string += "4. Draw ellipses for changing theta_1\n"
-    query_string += "5. Draw ellipses for changing exponent\n"
+    query_string += "4. Draw ellipses for changing n\n"
+    query_string += "5. Draw ellipses for changing theta_1\n"
+    query_string += "6. Draw ellipses for changing exponent\n"
     action = input(query_string)
     if action == "1":
         accuracy_vs_n(tests)
@@ -145,19 +166,13 @@ def query_user():
     elif action == "3":
         accuracy_vs_exponent(tests)
     elif action == "4":
-        ellipses_vs_theta1(tests)
+        ellipses_vs_n(tests)
     elif action == "5":
+        ellipses_vs_theta1(tests)
+    elif action == "6":
         ellipses_vs_exponent(tests)
     else:
         raise ValueError("Action not recognized")
-
-    #    raise ValueError("Ellipse graph not yet implemented")
-    #    #get xlim and ylim:
-    #    xmin = float(input("Enter xmin: "))
-    #    xmax = float(input("Enter xmax: "))
-    #    ymin = float(input("Enter ymin: "))
-    #    ymax = float(input("Enter ymax: "))
-    #    graph_ellipses(methods, ns, runs, theta_stars, accuracies, means, covs, xmin, xmax, ymin, ymax)
 
 
 query_user()
