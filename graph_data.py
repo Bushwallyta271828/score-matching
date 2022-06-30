@@ -4,6 +4,8 @@ from file_read_write import read_from_file
 from matplotlib.patches import Ellipse
 import test_class
 import sufficient_statistics
+import matplotlib.colors as colors
+import matplotlib.cm as cm
 
 
 
@@ -140,8 +142,8 @@ def graph_ellipse(axes, center, cov, color='black', nstd=1):
     eigvals, eigvecs = np.linalg.eigh(cov)
     orient = np.arctan2(eigvecs[:, 0][1], eigvecs[:, 0][0])
     ell = Ellipse(xy=center,
-                    width=2 * nsdt * np.sqrt(eigvals[0]),
-                    height=2 * nsdt * np.sqrt(eigvals[1]),
+                    width=2 * nstd * np.sqrt(eigvals[0]),
+                    height=2 * nstd * np.sqrt(eigvals[1]),
                     angle=np.degrees(orient), color=color)
     axes.add_artist(ell)
     ell.set_facecolor('none')
@@ -157,7 +159,45 @@ def ellipses_vs_theta1(tests):
 
 
 def ellipses_vs_exponent(tests):
-    raise NotImplementedError
+    #get limits from user:
+    xmin = float(input("Enter xmin: "))
+    xmax = float(input("Enter xmax: "))
+    ymin = float(input("Enter ymin: "))
+    ymax = float(input("Enter ymax: "))
+
+    #create two sets of axes
+    fig, axes = plt.subplots(1, 2, figsize=(10, 5))
+    axes[0].set_title('MLE')
+    axes[1].set_title('Score Matching')
+    for axis in axes:
+        axis.set_xlim([xmin, xmax])
+        axis.set_ylim([ymin, ymax])
+        axis.set_xlabel('theta_0')
+        axis.set_ylabel('theta_1')
+
+    #calibrate the color scheme
+    min_exponent = min([test.parameters.suffstats[1].exponent for test in tests])
+    max_exponent = max([test.parameters.suffstats[1].exponent for test in tests])
+    #add colorbar
+    cmap = plt.get_cmap('jet')
+    norm = colors.Normalize(vmin=min_exponent, vmax=max_exponent)
+    mapper = cm.ScalarMappable(norm=norm, cmap=cmap)
+    mapper.set_array([])
+    fig.colorbar(mapper, ax=axes[0], label='exponent')
+    fig.colorbar(mapper, ax=axes[1], label='exponent')
+
+    #plot the data
+    for test in tests:
+        if test.parameters.method == "mle":
+            axis = axes[0]
+        elif test.parameters.method == "scorematching":
+            axis = axes[1]
+        else:
+            raise ValueError("Method not recognized")
+        color = mapper.to_rgba(test.parameters.suffstats[1].exponent)
+        ell = graph_ellipse(axis, test.results.mean + test.parameters.theta_star, test.results.cov, color=color)
+        axis.plot([test.parameters.theta_star[0]], [test.parameters.theta_star[1]], '.', color='black')
+    plt.show()
 
 
 def query_user():
