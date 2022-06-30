@@ -28,7 +28,7 @@ def parameters_to_results(test_parameters):
     displacements = np.array(displacements)
     #fit 2d Gaussian to displacements
     mu = np.mean(displacements, axis=0)
-    sigma = np.cov(displacements.T)
+    sigma = np.cov(displacements.T) #Note that this automatically subtracts out mean!
     results = test_class.TestResults(accuracy=sum(accuracies)/len(accuracies), mean=mu, cov=sigma)
     return results
 
