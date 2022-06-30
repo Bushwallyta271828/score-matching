@@ -136,6 +136,18 @@ def accuracy_vs_exponent(tests):
     plt.show()
 
 
+def graph_ellipse(axes, center, cov, color='black', nstd=1):
+    eigvals, eigvecs = np.linalg.eigh(cov)
+    orient = np.arctan2(eigvecs[:, 0][1], eigvecs[:, 0][0])
+    ell = Ellipse(xy=center,
+                    width=2 * nsdt * np.sqrt(eigvals[0]),
+                    height=2 * nsdt * np.sqrt(eigvals[1]),
+                    angle=np.degrees(orient), color=color)
+    axes.add_artist(ell)
+    ell.set_facecolor('none')
+    return ell
+
+
 def ellipses_vs_n(tests):
     raise NotImplementedError
 
@@ -158,6 +170,7 @@ def query_user():
     query_string += "4. Draw ellipses for changing n\n"
     query_string += "5. Draw ellipses for changing theta_1\n"
     query_string += "6. Draw ellipses for changing exponent\n"
+    query_string += "Enter an integer: "
     action = input(query_string)
     if action == "1":
         accuracy_vs_n(tests)
