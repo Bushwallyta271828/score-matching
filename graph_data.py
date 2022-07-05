@@ -106,7 +106,58 @@ import matplotlib.cm as cm
 
 
 def accuracy_vs_n(tests):
-    raise NotImplementedError
+    #tests is a list of test_class.Test objects
+    log_mle_accuracies = []
+    log_mle_ns = []
+    log_scorematch_accuracies = []
+    log_scorematch_ns = []
+
+    for test in tests:
+        if test.parameters.method == "mle":
+            log_mle_accuracies.append(np.log(test.results.accuracy))
+            log_mle_ns.append(np.log(test.parameters.n))
+        elif test.parameters.method == "scorematching":
+            log_scorematch_accuracies.append(np.log(test.results.accuracy))
+            log_scorematch_ns.append(np.log(test.parameters.n))
+        else:
+            raise ValueError("Method not recognized")
+
+    log_mle_accuracies = np.array(log_mle_accuracies)
+    log_mle_ns = np.array(log_mle_ns)
+    log_scorematch_accuracies = np.array(log_scorematch_accuracies)
+    log_scorematch_ns = np.array(log_scorematch_ns)
+
+    #create figure with two axes:
+    fig, ax = plt.subplots(1, 2, figsize=(10, 5))
+    raw = ax[0]
+    adjusted = ax[1]
+
+    #create subplot for plotting raw data:
+    raw.plot(log_mle_ns, log_mle_accuracies, 'bo', label='MLE Data')
+    raw.plot(log_mle_ns, log_mle_accuracies, 'b')
+    raw.plot(log_scorematch_ns, log_scorematch_accuracies, 'ro', label='Score Matching Data')
+    raw.plot(log_scorematch_ns, log_scorematch_accuracies, 'r')
+    raw.set_xlabel('log(sample size)')
+    raw.set_ylabel('log(accuracy)')
+    raw.legend(loc='upper right')
+    raw.set_title('Accuracy vs. Sample Size')
+
+    #create subplot for plotting adjusted data:
+    adjusted_mle_accuracies = log_mle_accuracies + log_mle_ns / 2
+    adjusted_scorematch_accuracies = log_scorematch_accuracies + log_scorematch_ns / 2
+    adjusted.plot(log_mle_ns, adjusted_mle_accuracies, 'bo', label='MLE Data')
+    adjusted.plot(log_mle_ns, adjusted_mle_accuracies, 'b')
+    adjusted.plot(log_scorematch_ns, adjusted_scorematch_accuracies, 'ro', label='Score Matching Data')
+    adjusted.plot(log_scorematch_ns, adjusted_scorematch_accuracies, 'r')
+    adjusted.set_xlabel('log(sample size)')
+    adjusted.set_ylabel('log(accuracy) + log(sample size) / 2')
+    adjusted.legend(loc='upper right')
+    adjusted.set_title('Accuracy (adjusted) vs. Sample Size')
+
+    #show the plot
+    plt.show()
+
+
 
 
 def accuracy_vs_theta1(tests):
