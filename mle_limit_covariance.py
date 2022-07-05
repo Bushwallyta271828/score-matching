@@ -14,7 +14,7 @@ from scipy.integrate import quad
 #    return test_parameters.F(x) * test_parameters.suffstats[suffstat_index].get_coefficient(x)
 
 
-def mle_direct_covariance(test_parameters):
+def mle_limit_covariance(test_parameters):
     #test_parameters is of type test_class.TestParameters.
     #The formula for the Fisher matrix is E[F(x) F(x)^T] - E[F(x)] E[F(x)^T].
     #The covariance should then be the inverse of the Fisher matrix.
