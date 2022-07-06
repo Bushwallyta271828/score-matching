@@ -10,6 +10,19 @@ import matplotlib.colors as colors
 import matplotlib.cm as cm
 
 
+class Experiment:
+    def __init__(self, create_function, graph_function, description):
+        self.create_function = create_function
+        self.graph_function = graph_function
+        self.description = description
+
+
+experiments = []
+
+
+#### CHANGING EXPONENT EXPERIMENT ####
+
+
 def changing_exponent_parameters():
     #collect inputs from user:
     n = int(input("Enter n: "))
@@ -105,9 +118,6 @@ def accuracy_vs_n(tests):
 
 
 
-def accuracy_vs_theta1(tests):
-    raise NotImplementedError
-
 
 def accuracy_vs_exponent(tests):
     #tests is a list of test_class.Test objects
@@ -146,12 +156,6 @@ def graph_ellipse(axes, center, cov, color='black', nstd=1):
     return ell
 
 
-def ellipses_vs_n(tests):
-    raise NotImplementedError
-
-
-def ellipses_vs_theta1(tests):
-    raise NotImplementedError
 
 
 def ellipses_vs_exponent(tests):
@@ -196,37 +200,39 @@ def ellipses_vs_exponent(tests):
     plt.show()
 
 
-def query_user():
+#### USER INTERACTION ####
+
+
+def create_query_user():
+    query_string = "What experiment would you like to run?\n"
+    for i, experiment in enumerate(experiments):
+        query_string += str(i) + ": " + experiment.description + "\n"
+    query_string += "Enter the kind of experiment you would like to run (integer): "
+    action = int(input(query_string))
+    parameters_for_tests = experiments[action].create_function()
+    tests = run_tests(parameters_for_tests)
+    write_to_file(tests)
+
+
+def graph_query_user():
     test_number = input("Enter test number: ")
     tests = read_from_file(test_number)
-    query_string = "What would you like to do?\n"
-    query_string += "1. Graph accuracy vs. n\n"
-    query_string += "2. Graph accuracy vs. theta_1\n"
-    query_string += "3. Graph accuracy vs. exponent\n"
-    query_string += "4. Draw ellipses for changing n\n"
-    query_string += "5. Draw ellipses for changing theta_1\n"
-    query_string += "6. Draw ellipses for changing exponent\n"
+    query_string = "What kinda of experiment was this?\n"
+    for i, experiment in enumerate(experiments):
+        query_string += str(i) + ": " + experiment.description + "\n"
     query_string += "Enter an integer: "
-    action = input(query_string)
-    if action == "1":
-        accuracy_vs_n(tests)
-    elif action == "2":
-        accuracy_vs_theta1(tests)
-    elif action == "3":
-        accuracy_vs_exponent(tests)
-    elif action == "4":
-        ellipses_vs_n(tests)
-    elif action == "5":
-        ellipses_vs_theta1(tests)
-    elif action == "6":
-        ellipses_vs_exponent(tests)
+    action = int(input(query_string))
+    experiments[action].graph_function(tests)
+
+
+def query_user():
+    create_or_graph = input("Do you want to create a new test or graph an existing test? (c/g): ")
+    if create_or_graph == "c":
+        create_query_user()
+    elif create_or_graph == "g":
+        graph_query_user()
     else:
         raise ValueError("Action not recognized")
 
 
 query_user()
-
-
-parameters_for_tests = asymptotic_test_parameters()
-tests = run_tests(parameters_for_tests)
-write_to_file(tests)
