@@ -22,8 +22,17 @@ def normalized(x, test_parameters, Z):
 
 
 def weighted_function(x, function, test_parameters, Z):
-    #assumes function wants a numpy array as argument
-    return normalized(x, test_parameters, Z) * function(np.array([x]))[0]
+    #Assumes function wants a numpy array as argument.
+    #Casing is because for large x the function can
+    #cause overflow problems but the weighting function
+    #is approximately zero there anyway so it doesn't matter.
+    #This works because the weighting function falls off
+    #much faster than the functions we are integrating grow.
+    norm = normalized(x, test_parameters, Z)
+    if norm == 0:
+        return 0
+    else:
+        return norm * function(np.array([x]))[0]
 
 
 def expectation(function, test_parameters, Z):
