@@ -4,13 +4,17 @@ import test_class
 from scipy.integrate import quad
 
 
+def my_quad(f, args):
+    return quad(f, -np.inf, np.inf, args=args, limit=10000)[0]
+
+
 def non_normalized(x, test_parameters):
     exponent = np.dot(test_parameters.theta_star, ss.zeroth_derivatives(test_parameters.suffstats, np.array([x])))[0]
     return np.exp(exponent)
 
 
 def partition(test_parameters):
-    return quad(non_normalized, -np.inf, np.inf, args=(test_parameters))[0]
+    return my_quad(non_normalized, (test_parameters,))
 
 
 def normalized(x, test_parameters, Z):
@@ -23,7 +27,7 @@ def weighted_function(x, function, test_parameters, Z):
 
 
 def expectation(function, test_parameters, Z):
-    return quad(weighted_function, -np.inf, np.inf, args=(function, test_parameters, Z))[0]
+    return my_quad(weighted_function, (function, test_parameters, Z))
 
 
 
