@@ -39,10 +39,10 @@ def limit_test(test_parameters):
         cov = mle_limit_covariance(test_parameters)
     elif test_parameters.method == 'scorematching_limit':
         cov = scorematching_limit_covariance(test_parameters)
-    mu = test_parameters.theta_star
+    mu = np.zeros(len(test_parameters.suffstats))
     #Create test_parameters.runs samples from a multivariate Gaussian
     #with mean 0 and covariance cov:
-    samples = np.random.multivariate_normal(np.zeros(len(test_parameters.suffstats)), cov, test_parameters.runs)
+    samples = np.random.multivariate_normal(mu, cov, test_parameters.runs)
     accuracies = np.sqrt(np.sum(samples**2, axis=1))
     return test_class.TestResults(accuracy=np.mean(accuracies), mean=mu, cov=cov)
 
