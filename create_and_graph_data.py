@@ -10,6 +10,9 @@ import matplotlib.colors as colors
 import matplotlib.cm as cm
 
 
+#### DEFINE Experiment CLASS ####
+
+
 class Experiment:
     def __init__(self, create_function, graph_function, description):
         self.create_function = create_function
@@ -19,6 +22,23 @@ class Experiment:
 
 experiments = []
 
+
+#### CREATE HELPER FUNCTION ####
+
+
+def graph_ellipse(axes, center, cov, color='black', nstd=1):
+    eigvals, eigvecs = np.linalg.eigh(cov)
+    orient = np.arctan2(eigvecs[:, 0][1], eigvecs[:, 0][0])
+    ell = Ellipse(xy=center,
+                    width=2 * nstd * np.sqrt(eigvals[0]),
+                    height=2 * nstd * np.sqrt(eigvals[1]),
+                    angle=np.degrees(orient), color=color)
+    axes.add_artist(ell)
+    ell.set_facecolor('none')
+    return ell
+
+
+#### CREATE EXPERIMENTS ####
 
 #### CHANGING EXPONENT EXPERIMENT ####
 
@@ -44,6 +64,90 @@ def changing_exponent_parameters():
     return parameters_for_tests
 
 
+def accuracy_vs_exponent(tests):
+    #tests is a list of test_class.Test objects
+    log_mle_accuracies = []
+    log_mle_exponents = []
+    log_scorematch_accuracies = []
+    log_scorematch_exponents = []
+    for test in tests:
+        if test.parameters.method == "mle":
+            log_mle_accuracies.append(np.log(test.results.accuracy))
+            log_mle_exponents.append(np.log(test.parameters.suffstats[1].exponent))
+        elif test.parameters.method == "scorematching":
+            log_scorematch_accuracies.append(np.log(test.results.accuracy))
+            log_scorematch_exponents.append(np.log(test.parameters.suffstats[1].exponent))
+        else:
+            raise ValueError("Method not recognized")
+    #plot the data:
+    plt.plot(log_mle_exponents, log_mle_accuracies, 'bo', label='MLE Data')
+    plt.plot(log_scorematch_exponents, log_scorematch_accuracies, 'ro', label='Score Matching Data')
+    #label the axes:
+    plt.xlabel('log(exponent)')
+    plt.ylabel('log(accuracy)')
+    plt.legend(loc='upper left')
+    plt.show()
+
+
+def ellipses_vs_exponent(tests):
+    #get limits from user:
+    xmin = float(input("Enter xmin: "))
+    xmax = float(input("Enter xmax: "))
+    ymin = float(input("Enter ymin: "))
+    ymax = float(input("Enter ymax: "))
+
+    #create two sets of axes
+    fig, axes = plt.subplots(1, 2, figsize=(10, 5))
+    axes[0].set_title('MLE')
+    axes[1].set_title('Score Matching')
+    for axis in axes:
+        axis.set_xlim([xmin, xmax])
+        axis.set_ylim([ymin, ymax])
+        axis.set_xlabel('theta_0')
+        axis.set_ylabel('theta_1')
+
+    #calibrate the color scheme
+    min_exponent = min([test.parameters.suffstats[1].exponent for test in tests])
+    max_exponent = max([test.parameters.suffstats[1].exponent for test in tests])
+    #add colorbar
+    cmap = plt.get_cmap('jet')
+    norm = colors.Normalize(vmin=min_exponent, vmax=max_exponent)
+    mapper = cm.ScalarMappable(norm=norm, cmap=cmap)
+    mapper.set_array([])
+    fig.colorbar(mapper, ax=axes[0], label='exponent')
+    fig.colorbar(mapper, ax=axes[1], label='exponent')
+
+    #plot the data
+    for test in tests:
+        if test.parameters.method == "mle":
+            axis = axes[0]
+        elif test.parameters.method == "scorematching":
+            axis = axes[1]
+        else:
+            raise ValueError("Method not recognized")
+        color = mapper.to_rgba(test.parameters.suffstats[1].exponent)
+        ell = graph_ellipse(axis, test.results.mean + test.parameters.theta_star, test.results.cov, color=color)
+        axis.plot([test.parameters.theta_star[0]], [test.parameters.theta_star[1]], '.', color='black')
+    plt.show()
+
+
+def graph_exponent_change(tests):
+    action = input("Do you want to graph accuracy or ellipses? (a/e): ")
+    if action == 'a':
+        accuracy_vs_exponent(tests)
+    elif action == 'e':
+        ellipses_vs_exponent(tests)
+    else:
+        raise ValueError("Action not recognized")
+
+
+changing_power_experiment = Experiment(changing_exponent_parameters, graph_exponent_change, "Change the exponent of the polynomial")
+experiments.append(changing_power_experiment)
+
+
+#### CHANGING n EXPERIMENT ####
+
+
 def asymptotic_test_parameters():
     exponent = int(input("Enter exponent: "))
     runs = int(input("Enter runs: "))
@@ -60,7 +164,6 @@ def asymptotic_test_parameters():
             suffstats = [sufficient_statistics.FirstStat(), sufficient_statistics.PolyStat(exponent)]
             parameters_for_tests.append(test_class.TestParameters(suffstats, np.array([1.0, 1.0]), n, method, runs))
     return parameters_for_tests
-
 
 
 def accuracy_vs_n(tests):
@@ -116,88 +219,8 @@ def accuracy_vs_n(tests):
     plt.show()
 
 
-
-
-
-def accuracy_vs_exponent(tests):
-    #tests is a list of test_class.Test objects
-    log_mle_accuracies = []
-    log_mle_exponents = []
-    log_scorematch_accuracies = []
-    log_scorematch_exponents = []
-    for test in tests:
-        if test.parameters.method == "mle":
-            log_mle_accuracies.append(np.log(test.results.accuracy))
-            log_mle_exponents.append(np.log(test.parameters.suffstats[1].exponent))
-        elif test.parameters.method == "scorematching":
-            log_scorematch_accuracies.append(np.log(test.results.accuracy))
-            log_scorematch_exponents.append(np.log(test.parameters.suffstats[1].exponent))
-        else:
-            raise ValueError("Method not recognized")
-    #plot the data:
-    plt.plot(log_mle_exponents, log_mle_accuracies, 'bo', label='MLE Data')
-    plt.plot(log_scorematch_exponents, log_scorematch_accuracies, 'ro', label='Score Matching Data')
-    #label the axes:
-    plt.xlabel('log(exponent)')
-    plt.ylabel('log(accuracy)')
-    plt.legend(loc='upper left')
-    plt.show()
-
-
-def graph_ellipse(axes, center, cov, color='black', nstd=1):
-    eigvals, eigvecs = np.linalg.eigh(cov)
-    orient = np.arctan2(eigvecs[:, 0][1], eigvecs[:, 0][0])
-    ell = Ellipse(xy=center,
-                    width=2 * nstd * np.sqrt(eigvals[0]),
-                    height=2 * nstd * np.sqrt(eigvals[1]),
-                    angle=np.degrees(orient), color=color)
-    axes.add_artist(ell)
-    ell.set_facecolor('none')
-    return ell
-
-
-
-
-def ellipses_vs_exponent(tests):
-    #get limits from user:
-    xmin = float(input("Enter xmin: "))
-    xmax = float(input("Enter xmax: "))
-    ymin = float(input("Enter ymin: "))
-    ymax = float(input("Enter ymax: "))
-
-    #create two sets of axes
-    fig, axes = plt.subplots(1, 2, figsize=(10, 5))
-    axes[0].set_title('MLE')
-    axes[1].set_title('Score Matching')
-    for axis in axes:
-        axis.set_xlim([xmin, xmax])
-        axis.set_ylim([ymin, ymax])
-        axis.set_xlabel('theta_0')
-        axis.set_ylabel('theta_1')
-
-    #calibrate the color scheme
-    min_exponent = min([test.parameters.suffstats[1].exponent for test in tests])
-    max_exponent = max([test.parameters.suffstats[1].exponent for test in tests])
-    #add colorbar
-    cmap = plt.get_cmap('jet')
-    norm = colors.Normalize(vmin=min_exponent, vmax=max_exponent)
-    mapper = cm.ScalarMappable(norm=norm, cmap=cmap)
-    mapper.set_array([])
-    fig.colorbar(mapper, ax=axes[0], label='exponent')
-    fig.colorbar(mapper, ax=axes[1], label='exponent')
-
-    #plot the data
-    for test in tests:
-        if test.parameters.method == "mle":
-            axis = axes[0]
-        elif test.parameters.method == "scorematching":
-            axis = axes[1]
-        else:
-            raise ValueError("Method not recognized")
-        color = mapper.to_rgba(test.parameters.suffstats[1].exponent)
-        ell = graph_ellipse(axis, test.results.mean + test.parameters.theta_star, test.results.cov, color=color)
-        axis.plot([test.parameters.theta_star[0]], [test.parameters.theta_star[1]], '.', color='black')
-    plt.show()
+changing_n_experiment = Experiment(asymptotic_test_parameters, accuracy_vs_n, "Change the sample size / test asymptotic behavior")
+experiments.append(changing_n_experiment)
 
 
 #### USER INTERACTION ####
