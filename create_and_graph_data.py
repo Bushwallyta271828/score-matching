@@ -2,8 +2,12 @@ import numpy as np
 import math
 import test_class
 from run_tests import run_tests
-from file_read_write import write_to_file
+from file_read_write import write_to_file, read_from_file
 import sufficient_statistics
+import matplotlib.pyplot as plt
+from matplotlib.patches import Ellipse
+import matplotlib.colors as colors
+import matplotlib.cm as cm
 
 
 def changing_exponent_parameters():
@@ -43,21 +47,6 @@ def asymptotic_test_parameters():
             suffstats = [sufficient_statistics.FirstStat(), sufficient_statistics.PolyStat(exponent)]
             parameters_for_tests.append(test_class.TestParameters(suffstats, np.array([1.0, 1.0]), n, method, runs))
     return parameters_for_tests
-
-
-parameters_for_tests = asymptotic_test_parameters()
-tests = run_tests(parameters_for_tests)
-write_to_file(tests)
-
-
-import matplotlib.pyplot as plt
-import numpy as np
-from file_read_write import read_from_file
-from matplotlib.patches import Ellipse
-import test_class
-import sufficient_statistics
-import matplotlib.colors as colors
-import matplotlib.cm as cm
 
 
 
@@ -236,3 +225,8 @@ def query_user():
 
 
 query_user()
+
+
+parameters_for_tests = asymptotic_test_parameters()
+tests = run_tests(parameters_for_tests)
+write_to_file(tests)
