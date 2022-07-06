@@ -3,33 +3,51 @@ import math
 import test_class
 from mle_accuracy import mle
 from scorematching_accuracy import scorematching
+from limit_covariance import mle_limit_covariance
+from limit_covariance import scorematching_limit_covariance
 from file_read_write import write_to_file
 import sufficient_statistics
 
 
 def parameters_to_results(test_parameters):
     #test_parameters is of type test_class.TestParameters
-    accuracies = []
-    displacements = []
-    for i in range(test_parameters.runs):
+    if test_parameters.method in ['mle', 'scorematching']:
+        accuracies = []
+        displacements = []
+        for i in range(test_parameters.runs):
+            print("method:", test_parameters.method,
+                    "suffstats:", [str(suffstat) for suffstat in test_parameters.suffstats],
+                    "n:", test_parameters.n,
+                    "theta_star:", test_parameters.theta_star,
+                    "run:", i)
+            if test_parameters.method == 'mle':
+                output = mle(test_parameters)
+            elif test_parameters.method == 'scorematching':
+                output = scorematching(test_parameters)
+            displacements.append(output[0] - test_parameters.theta_star)
+            accuracies.append(output[1])
+        displacements = np.array(displacements)
+        #fit 2d Gaussian to displacements
+        mu = np.mean(displacements, axis=0)
+        sigma = np.cov(displacements.T) #Note that this automatically subtracts out mean!
+        results = test_class.TestResults(accuracy=sum(accuracies)/len(accuracies), mean=mu, cov=sigma)
+    elif test_parameters.method in ['mle_limit', 'scorematching_limit']:
         print("method:", test_parameters.method,
                 "suffstats:", [str(suffstat) for suffstat in test_parameters.suffstats],
                 "n:", test_parameters.n,
-                "theta_star:", test_parameters.theta_star,
-                "run:", i)
-        if test_parameters.method == 'mle':
-            output = mle(test_parameters)
-        elif test_parameters.method == 'scorematching':
-            output = scorematching(test_parameters)
-        else:
-            raise ValueError('method must be either mle or scorematching')
-        displacements.append(output[0] - test_parameters.theta_star)
-        accuracies.append(output[1])
-    displacements = np.array(displacements)
-    #fit 2d Gaussian to displacements
-    mu = np.mean(displacements, axis=0)
-    sigma = np.cov(displacements.T) #Note that this automatically subtracts out mean!
-    results = test_class.TestResults(accuracy=sum(accuracies)/len(accuracies), mean=mu, cov=sigma)
+                "theta_star:", test_parameters.theta_star)
+        if test_parameters.method == 'mle_limit':
+            cov = mle_limit_covariance(test_parameters)
+        elif test_parameters.method == 'scorematching_limit':
+            cov = scorematching_limit_covariance(test_parameters)
+        mu = test_parameters.theta_star
+        #Create test_parameters.n samples from a multivariate Gaussian
+        #with mean 0 and covariance cov:
+        samples = np.random.multivariate_normal(np.zeros(len(test_parameters.suffstats)), cov, test_parameters.runs)
+        accuracies = np.sqrt(np.sum(samples**2, axis=1))
+        results = test_class.TestResults(accuracy=np.mean(accuracies), mean=mu, cov=cov)
+    else:
+        raise ValueError('unrecognized method')
     return results
 
 
