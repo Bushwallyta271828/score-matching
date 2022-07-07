@@ -107,39 +107,53 @@ def scorematching_limit_covariance(test_parameters):
         E_JFxJFxT.append(E_JFxJFxT_row)
     E_JFxJFxT = np.array(E_JFxJFxT)
     outer_matrix = np.linalg.inv(E_JFxJFxT)
+    #print("outer_matrix: ", outer_matrix)
+    #Note: outer_matrix has been checked against the formula
+    #from the LaTeX file and it is correct!
 
     #Now, let's compute the "inner" matrix
     #We'll start by defining some of the functions involved.
     def A(x):
-        JFx = -ss.first_derivatives(test_parameters.suffstats, np.array([x]))
+        JFx = (-ss.first_derivatives(test_parameters.suffstats, np.array([x]))).flatten()
         JFx_JFxT = np.outer(JFx, JFx)
         JFx_JFxT_theta = np.dot(JFx_JFxT, -test_parameters.theta_star)
-        Delta_F = -ss.second_derivatives(test_parameters.suffstats, np.array([x]))
-        return JFx_JFxT_theta - Delta_F
+        Delta_F = (-ss.second_derivatives(test_parameters.suffstats, np.array([x]))).flatten()
+        return JFx_JFxT_theta + Delta_F
 
-    #This is computationally stupid because we compute all of A
+    #Note: A has been checked against the formula from the LaTeX file
+    #and it is correct!
+
+
+    #This approach is computationally stupid because we compute all of A
     #each time we ask for each component, but it's a bit nicer to think about.
-    As = [lambda x: A(x)[i] for i in range(len(test_parameters.suffstats))]
-
-    #We can now duplicate the code from the MLE case to get E[A(x) A(x)^T] - E[A(x)] E[A(x)^T]
-    #i.e. Sigma_A
-
-    E_Ax = [expectation(As_i, test_parameters, Z) for As_i in As]
+    E_Ax = []
+    for i in range(len(test_parameters.suffstats)):
+        def A_i(x):
+            return np.array([A(x)[i]])
+        #print("A_" + str(i) + "(0.7): ", A_i(0.7))
+        E_Ax.append(expectation(A_i, test_parameters, Z))
     E_Ax = np.array(E_Ax)
+    #print("E_Ax: ", E_Ax)
+    #Note: E_Ax has been checked against the formula from the LaTeX file
+    #and it is correct!
     E_Ax_E_AxT = np.outer(E_Ax, E_Ax)
-
+    #print("E_Ax_E_AxT: ", E_Ax_E_AxT)
+    
     E_AxAxT = []
-    for As_i in As:
+    for i in range(len(test_parameters.suffstats)):
         E_AxAxT_row = []
-        for As_j in As:
-            def As_i_As_j_product(x):
-                return As_i(x) * As_j(x)
-            entry = expectation(As_i_As_j_product, test_parameters, Z)
+        for j in range(len(test_parameters.suffstats)):
+            def A_i_A_j_product(x):
+                return np.array([A(x)[i] * A(x)[j]])
+            entry = expectation(A_i_A_j_product, test_parameters, Z)
             E_AxAxT_row.append(entry)
         E_AxAxT.append(E_AxAxT_row)
     E_AxAxT = np.array(E_AxAxT)
+    #print("E_AxAxT: ", E_AxAxT)
 
     Sigma_A = E_AxAxT - E_Ax_E_AxT
+    #print("Sigma_A: ", Sigma_A)
+    #print("det(Sigma_A): ", np.linalg.det(Sigma_A))
 
     #Finally we can compute our answer:
     #(Note: this is actually computing the covariance matrix for -theta,

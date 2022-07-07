@@ -234,14 +234,15 @@ def changing_exponent_mle_and_mle_limit_parameters():
     #collect inputs from user:
     n = int(input("Enter n: "))
     runs = int(input("Enter runs: "))
-    exponent_start = float(input("Enter exponent start: "))
-    exponent_stop = float(input("Enter exponent stop: "))
+    exponent_start = int(input("Enter exponent start: "))
+    exponent_stop = int(input("Enter exponent stop: "))
     num_exponents = int(input("Enter number of exponents: "))
     
     #generate parameters:
     exponents = np.exp(np.linspace(math.log(exponent_start), math.log(exponent_stop), num=num_exponents))
     exponents = 2 * (exponents / 2).astype(int)
     exponents = np.maximum(exponents, 4)
+    print("Exponents: ", exponents)
 
     parameters_for_tests = []
     for method in ['mle', 'mle_limit']:
@@ -297,6 +298,79 @@ changing_power_experiment_mle_and_mle_limit = Experiment(changing_exponent_mle_a
                                                             ellipses_vs_exponent_mle_and_mle_limit,
                                                             "Change the exponent of the polynomial (between mle and mle_limit -- no scorematching)")
 experiments.append(changing_power_experiment_mle_and_mle_limit)
+
+
+#### CHANGING EXPONENT EXPERIMENT (scorematching and scorematching_limit) ####
+
+
+def changing_exponent_scorematching_and_scorematching_limit_parameters():
+    #collect inputs from user:
+    n = int(input("Enter n: "))
+    runs = int(input("Enter runs: "))
+    exponent_start = int(input("Enter exponent start: "))
+    exponent_stop = int(input("Enter exponent stop: "))
+    num_exponents = int(input("Enter number of exponents: "))
+    
+    #generate parameters:
+    exponents = np.exp(np.linspace(math.log(exponent_start), math.log(exponent_stop), num=num_exponents))
+    exponents = 2 * (exponents / 2).astype(int)
+    exponents = np.maximum(exponents, 4)
+    print("Exponents: ", exponents)
+
+    parameters_for_tests = []
+    for method in ['scorematching_limit', 'scorematching']:
+        for exponent in exponents:        
+            suffstats = [sufficient_statistics.FirstStat(), sufficient_statistics.PolyStat(exponent)]
+            parameters_for_tests.append(test_class.TestParameters(suffstats, np.array([1.0, 1.0]), n, method, runs))
+    return parameters_for_tests
+
+
+def ellipses_vs_exponent_scorematching_and_scorematching_limit(tests):
+    #get limits from user:
+    xmin = float(input("Enter xmin: "))
+    xmax = float(input("Enter xmax: "))
+    ymin = float(input("Enter ymin: "))
+    ymax = float(input("Enter ymax: "))
+
+    #create two sets of axes
+    fig, axes = plt.subplots(1, 2, figsize=(10, 5))
+    axes[0].set_title('Score Matching')
+    axes[1].set_title('Score Matching (limit formula)')
+    for axis in axes:
+        axis.set_xlim([xmin, xmax])
+        axis.set_ylim([ymin, ymax])
+        axis.set_xlabel('theta_0')
+        axis.set_ylabel('theta_1')
+
+    #calibrate the color scheme
+    min_exponent = min([test.parameters.suffstats[1].exponent for test in tests])
+    max_exponent = max([test.parameters.suffstats[1].exponent for test in tests])
+    #add colorbar
+    cmap = plt.get_cmap('jet')
+    norm = colors.Normalize(vmin=min_exponent, vmax=max_exponent)
+    mapper = cm.ScalarMappable(norm=norm, cmap=cmap)
+    mapper.set_array([])
+    fig.colorbar(mapper, ax=axes[0], label='exponent')
+    fig.colorbar(mapper, ax=axes[1], label='exponent')
+
+    #plot the data
+    for test in tests:
+        if test.parameters.method == "scorematching":
+            axis = axes[0]
+        elif test.parameters.method == "scorematching_limit":
+            axis = axes[1]
+        else:
+            raise ValueError("Method not recognized")
+        color = mapper.to_rgba(test.parameters.suffstats[1].exponent)
+        ell = graph_ellipse(axis, test.results.mean + test.parameters.theta_star, test.results.cov, color=color)
+        axis.plot([test.parameters.theta_star[0]], [test.parameters.theta_star[1]], '.', color='black')
+    plt.show()
+
+
+changing_power_experiment_scorematching_and_scorematching_limit = Experiment(changing_exponent_scorematching_and_scorematching_limit_parameters,
+                                                                                ellipses_vs_exponent_scorematching_and_scorematching_limit,
+                                                                                "Change the exponent of the polynomial (between scorematching and scorematching_limit -- no mle)")
+experiments.append(changing_power_experiment_scorematching_and_scorematching_limit)
 
 
 #### USER INTERACTION ####
