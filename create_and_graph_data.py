@@ -444,8 +444,44 @@ def ellipses_vs_exponent_mle_limit_and_scorematching_limit(tests):
     plt.show()
 
 
+def accuracy_vs_exponent_mle_limit_and_scorematching_limit(tests):
+    #tests is a list of test_class.Test objects
+    log_mle_limit_accuracies = []
+    log_mle_limit_exponents = []
+    log_scorematch_limit_accuracies = []
+    log_scorematch_limit_exponents = []
+    for test in tests:
+        if test.parameters.method == "mle_limit":
+            log_mle_limit_accuracies.append(np.log(test.results.accuracy))
+            log_mle_limit_exponents.append(np.log(test.parameters.suffstats[1].exponent))
+        elif test.parameters.method == "scorematching_limit":
+            log_scorematch_limit_accuracies.append(np.log(test.results.accuracy))
+            log_scorematch_limit_exponents.append(np.log(test.parameters.suffstats[1].exponent))
+        else:
+            raise ValueError("Method not recognized")
+    #plot the data:
+    plt.plot(log_mle_limit_exponents, log_mle_limit_accuracies, 'bo', label='MLE Limit Data')
+    plt.plot(log_scorematch_limit_exponents, log_scorematch_limit_accuracies, 'ro', label='Score Matching Limit Data')
+    #label the axes:
+    plt.xlabel('log(exponent)')
+    plt.ylabel('log(accuracy)')
+    plt.legend(loc='upper left')
+    plt.show()
+
+
+def graph_exponent_change_mle_limit_and_scorematching_limit(tests):
+    action = input("Do you want to graph accuracy or ellipses? (a/e): ")
+    if action == 'a':
+        accuracy_vs_exponent_mle_limit_and_scorematching_limit(tests)
+    elif action == 'e':
+        ellipses_vs_exponent_mle_limit_and_scorematching_limit(tests)
+    else:
+        raise ValueError("Action not recognized")
+
+
+
 changing_power_experiment_mle_limit_and_scorematching_limit = Experiment(changing_exponent_mle_limit_and_scorematching_limit_parameters,
-                                                                            ellipses_vs_exponent_mle_limit_and_scorematching_limit,
+                                                                            graph_exponent_change_mle_limit_and_scorematching_limit,
                                                                             "Change the exponent of the polynomial (between mle_limit and scorematching_limit)")
 experiments.append(changing_power_experiment_mle_limit_and_scorematching_limit)
 
