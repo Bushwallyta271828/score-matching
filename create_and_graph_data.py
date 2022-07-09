@@ -493,12 +493,12 @@ def sinusoid_mle_limit_and_scorematching_limit_parameters():
     #collect inputs from user:
     n = int(input("Enter n: "))
     runs = int(input("Enter runs: "))
-    exponent_start = float(input("Enter frequency start: "))
-    exponent_stop = float(input("Enter frequency stop: "))
-    num_exponents = int(input("Enter number of frequencies: "))
+    frequency_start = float(input("Enter frequency start: "))
+    frequency_stop = float(input("Enter frequency stop: "))
+    num_frequencies = int(input("Enter number of frequencies: "))
     
     #generate parameters:
-    freqiencies = np.exp(np.linspace(math.log(exponent_start), math.log(exponent_stop), num=num_exponents))
+    freqiencies = np.exp(np.linspace(math.log(frequency_start), math.log(frequency_stop), num=num_frequencies))
 
     parameters_for_tests = []
     for method in ['mle_limit', 'scorematching_limit']:
@@ -593,6 +593,57 @@ changing_frequency_experiment_mle_limit_and_scorematching_limit = Experiment(sin
                                                                                 graph_frequency_change_mle_limit_and_scorematching_limit,
                                                                                 "Change the frequency of a sinusoid (between mle_limit and scorematching_limit)")
 experiments.append(changing_frequency_experiment_mle_limit_and_scorematching_limit)
+
+
+#### 1D EXPERIMENT (mle_limit and scorematching_limit) ####
+
+
+def one_suffstat_parameters():
+    #collect inputs from user:
+    n = int(input("Enter n: "))
+    runs = int(input("Enter runs: "))
+    omega_start = float(input("Enter omega start: "))
+    omega_stop = float(input("Enter omega stop: "))
+    num_omegas = int(input("Enter number of omegas: "))
+    
+    #generate parameters:
+    omegas = np.exp(np.linspace(math.log(omega_start), math.log(omega_stop), num=num_omegas))
+
+    parameters_for_tests = []
+    for method in ['mle_limit', 'scorematching_limit']:
+        for omega in omegas:
+            suffstats = [sufficient_statistics.NormalizableSinusoidStat(omega=omega)]
+            parameters_for_tests.append(test_class.TestParameters(suffstats, np.array([1.0]), n, method, runs))
+    return parameters_for_tests
+
+
+def accuracy_vs_omega_one_suffstat(tests):
+    #tests is a list of test_class.Test objects
+    log_mle_limit_accuracies = []
+    log_mle_limit_omegas = []
+    log_scorematch_limit_accuracies = []
+    log_scorematch_limit_omegas = []
+    for test in tests:
+        if test.parameters.method == "mle_limit":
+            log_mle_limit_accuracies.append(np.log(test.results.accuracy))
+            log_mle_limit_omegas.append(np.log(test.parameters.suffstats[0].omega))
+        elif test.parameters.method == "scorematching_limit":
+            log_scorematch_limit_accuracies.append(np.log(test.results.accuracy))
+            log_scorematch_limit_omegas.append(np.log(test.parameters.suffstats[0].omega))
+        else:
+            raise ValueError("Method not recognized")
+    #plot the data:
+    plt.plot(log_mle_limit_omegas, log_mle_limit_accuracies, 'bo', label='MLE Limit Data')
+    plt.plot(log_scorematch_limit_omegas, log_scorematch_limit_accuracies, 'ro', label='Score Matching Limit Data')
+    #label the axes:
+    plt.xlabel('log(omega)')
+    plt.ylabel('log(accuracy)')
+    plt.legend(loc='upper left')
+    plt.show()
+
+
+one_suffstat_vs_omega = Experiment(one_suffstat_parameters, accuracy_vs_omega_one_suffstat, "Change the omega of a single normalizable sinusoid")
+experiments.append(one_suffstat_vs_omega)
 
 
 #### USER INTERACTION ####

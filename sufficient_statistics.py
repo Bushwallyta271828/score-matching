@@ -6,6 +6,8 @@ import numpy as np
 #where later_suff_stats[i](x) is everywhere non-positive.
 #This form is necessary for rejection sampling.
 
+#Note: the above note is depricated for pure-limit computations.
+
 
 class SuffStat:
     def __init__(self, zeroth_derivative, first_derivative, second_derivative):
@@ -71,6 +73,25 @@ class SinusoidStat(SuffStat):
 
     def second_derivative(self, xs):
         return -self.amplitude * self.frequency**2 * np.sin(self.frequency * xs + self.phase)
+
+
+class NormalizableSinusoidStat(SuffStat):
+    #NOTE: This doesn't satisfy the <= 0 requirement!
+    #Do not use this with non-limit computations!
+    def __init__(self, omega):
+        self.omega = omega
+
+    def __str__(self):
+        return "NormalizableSinusoidStat(omega={})".format(self.omega)
+
+    def zeroth_derivative(self, xs):
+        return -np.sin(self.omega * xs) - xs*xs / 2
+
+    def first_derivative(self, xs):
+        return -self.omega * np.cos(self.omega * xs) - xs
+
+    def second_derivative(self, xs):
+        return self.omega**2 * np.sin(self.omega * xs) - 1
 
 
 def zeroth_derivatives(suff_stats, xs):
