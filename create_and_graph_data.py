@@ -486,6 +486,115 @@ changing_power_experiment_mle_limit_and_scorematching_limit = Experiment(changin
 experiments.append(changing_power_experiment_mle_limit_and_scorematching_limit)
 
 
+#### SINUSOID EXPERIMENT (mle_limit and scorematching_limit) ####
+
+
+def sinusoid_mle_limit_and_scorematching_limit_parameters():
+    #collect inputs from user:
+    n = int(input("Enter n: "))
+    runs = int(input("Enter runs: "))
+    exponent_start = float(input("Enter frequency start: "))
+    exponent_stop = float(input("Enter frequency stop: "))
+    num_exponents = int(input("Enter number of frequencies: "))
+    
+    #generate parameters:
+    freqiencies = np.exp(np.linspace(math.log(exponent_start), math.log(exponent_stop), num=num_exponents))
+
+    parameters_for_tests = []
+    for method in ['mle_limit', 'scorematching_limit']:
+        for frequency in freqiencies:
+            suffstats = [sufficient_statistics.FirstStat(), sufficient_statistics.SinusoidStat(amplitude=1, frequency=frequency, phase=0)]
+            parameters_for_tests.append(test_class.TestParameters(suffstats, np.array([1.0, 1.0]), n, method, runs))
+    return parameters_for_tests
+
+
+def ellipses_vs_frequency_mle_limit_and_scorematching_limit(tests):
+    #get limits from user:
+    xmin = float(input("Enter xmin: "))
+    xmax = float(input("Enter xmax: "))
+    ymin = float(input("Enter ymin: "))
+    ymax = float(input("Enter ymax: "))
+
+    #create two sets of axes
+    fig, axes = plt.subplots(1, 2, figsize=(10, 5))
+    axes[0].set_title('MLE (limit formula)')
+    axes[1].set_title('Score Matching (limit formula)')
+    for axis in axes:
+        axis.set_xlim([xmin, xmax])
+        axis.set_ylim([ymin, ymax])
+        axis.set_xlabel('theta_0')
+        axis.set_ylabel('theta_1')
+
+    #calibrate the color scheme
+    min_frequency = min([test.parameters.suffstats[1].frequency for test in tests])
+    max_frequency = max([test.parameters.suffstats[1].frequency for test in tests])
+    #add colorbar
+    cmap = plt.get_cmap('jet')
+    norm = colors.Normalize(vmin=min_frequency, vmax=max_frequency)
+    mapper = cm.ScalarMappable(norm=norm, cmap=cmap)
+    mapper.set_array([])
+    fig.colorbar(mapper, ax=axes[0], label='frequency')
+    fig.colorbar(mapper, ax=axes[1], label='frequency')
+
+    #plot the data
+    for test in tests:
+        print("method: ", test.parameters.method,
+                "frequency: ", test.parameters.suffstats[1].frequency,
+                "covariance: ", test.results.cov)
+        if test.parameters.method == "mle_limit":
+            axis = axes[0]
+        elif test.parameters.method == "scorematching_limit":
+            axis = axes[1]
+        else:
+            raise ValueError("Method not recognized")
+        color = mapper.to_rgba(test.parameters.suffstats[1].frequency)
+        ell = graph_ellipse(axis, test.results.mean + test.parameters.theta_star, test.results.cov, color=color)
+        axis.plot([test.parameters.theta_star[0]], [test.parameters.theta_star[1]], '.', color='black')
+    plt.show()
+
+
+def accuracy_vs_frequency_mle_limit_and_scorematching_limit(tests):
+    #tests is a list of test_class.Test objects
+    log_mle_limit_accuracies = []
+    log_mle_limit_frequencies = []
+    log_scorematch_limit_accuracies = []
+    log_scorematch_limit_frequencies = []
+    for test in tests:
+        if test.parameters.method == "mle_limit":
+            log_mle_limit_accuracies.append(np.log(test.results.accuracy))
+            log_mle_limit_frequencies.append(np.log(test.parameters.suffstats[1].frequency))
+        elif test.parameters.method == "scorematching_limit":
+            log_scorematch_limit_accuracies.append(np.log(test.results.accuracy))
+            log_scorematch_limit_frequencies.append(np.log(test.parameters.suffstats[1].frequency))
+        else:
+            raise ValueError("Method not recognized")
+    #plot the data:
+    plt.plot(log_mle_limit_frequencies, log_mle_limit_accuracies, 'bo', label='MLE Limit Data')
+    plt.plot(log_scorematch_limit_frequencies, log_scorematch_limit_accuracies, 'ro', label='Score Matching Limit Data')
+    #label the axes:
+    plt.xlabel('log(frequency)')
+    plt.ylabel('log(accuracy)')
+    plt.legend(loc='upper left')
+    plt.show()
+
+
+def graph_frequency_change_mle_limit_and_scorematching_limit(tests):
+    action = input("Do you want to graph accuracy or ellipses? (a/e): ")
+    if action == 'a':
+        accuracy_vs_frequency_mle_limit_and_scorematching_limit(tests)
+    elif action == 'e':
+        ellipses_vs_frequency_mle_limit_and_scorematching_limit(tests)
+    else:
+        raise ValueError("Action not recognized")
+
+
+
+changing_frequency_experiment_mle_limit_and_scorematching_limit = Experiment(sinusoid_mle_limit_and_scorematching_limit_parameters,
+                                                                                graph_frequency_change_mle_limit_and_scorematching_limit,
+                                                                                "Change the frequency of a sinusoid (between mle_limit and scorematching_limit)")
+experiments.append(changing_frequency_experiment_mle_limit_and_scorematching_limit)
+
+
 #### USER INTERACTION ####
 
 
