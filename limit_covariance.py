@@ -154,6 +154,9 @@ def scorematching_limit_covariance(test_parameters):
     Sigma_A = E_AxAxT - E_Ax_E_AxT
     #print("Sigma_A: ", Sigma_A)
     #print("det(Sigma_A): ", np.linalg.det(Sigma_A))
+    print("outer = ", outer_matrix)
+    print("inner = ", Sigma_A)
+    print("\n")
 
     #Finally we can compute our answer:
     #(Note: this is actually computing the covariance matrix for -theta,
