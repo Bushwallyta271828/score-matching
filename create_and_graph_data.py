@@ -930,7 +930,42 @@ def ellipses_vs_bimodal_offset(tests):
     plt.show()
 
 
-changing_bimodal_offset_experiment = Experiment(bimodal_parameters, ellipses_vs_bimodal_offset, "Change the offset of a pair of bimodal sufficient statistics")
+def accuracy_vs_bimodal_offset(tests):
+    #tests is a list of test_class.Test objects
+    log_mle_limit_accuracies = []
+    mle_limit_offsets = []
+    log_scorematch_limit_accuracies = []
+    scorematch_limit_offsets = []
+    for test in tests:
+        if test.parameters.method == "mle_limit":
+            log_mle_limit_accuracies.append(np.log(test.results.accuracy))
+            mle_limit_offsets.append(test.parameters.suffstats[0].offset)
+        elif test.parameters.method == "scorematching_limit":
+            log_scorematch_limit_accuracies.append(np.log(test.results.accuracy))
+            scorematch_limit_offsets.append(test.parameters.suffstats[0].offset)
+        else:
+            raise ValueError("Method not recognized")
+    #plot the data:
+    plt.plot(mle_limit_offsets, log_mle_limit_accuracies, 'bo', label='MLE Limit Data')
+    plt.plot(scorematch_limit_offsets, log_scorematch_limit_accuracies, 'ro', label='Score Matching Limit Data')
+    #label the axes:
+    plt.xlabel('offset')
+    plt.ylabel('log(accuracy)')
+    plt.legend(loc='upper left')
+    plt.show()
+
+
+def graph_bimodal_offset(tests):
+    action = input("Do you want to graph accuracy or ellipses? (a/e): ")
+    if action == 'a':
+        accuracy_vs_bimodal_offset(tests)
+    elif action == 'e':
+        ellipses_vs_bimodal_offset(tests)
+    else:
+        raise ValueError("Action not recognized")
+
+
+changing_bimodal_offset_experiment = Experiment(bimodal_parameters, graph_bimodal_offset, "Change the offset of a pair of bimodal sufficient statistics")
 experiments.append(changing_bimodal_offset_experiment)
 
 
