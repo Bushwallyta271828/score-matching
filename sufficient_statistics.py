@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.special import erf
 
 
 #Note: I will assume that the family of distributions is of the form
@@ -111,6 +112,24 @@ class CenteredSinusoidStat(SuffStat):
 
     def second_derivative(self, xs):
         return self.omega**2 * np.sin(self.omega * xs)
+
+
+class BimodalPlusErfStat(SuffStat):
+    def __init__(self, offset, erfcoeff):
+        self.offset = offset
+        self.erfcoeff = erfcoeff
+
+    def __str__(self):
+        return "BimodalPlusErfStat(offset={}, erfcoeff={})".format(self.offset, self.erfcoeff)
+
+    def zeroth_derivative(self, xs):
+        return xs**2 - xs**4 / (2 * self.offset**2) + self.erfcoeff * erf(xs)
+
+    def first_derivative(self, xs):
+        return 2 * xs - 2 * xs**3 / self.offset**2 + self.erfcoeff * 2 * np.exp(-xs**2) / np.sqrt(np.pi)
+
+    def second_derivative(self, xs):
+        return 2 - 6 * xs**2 / self.offset**2 + self.erfcoeff * (-4 * xs * np.exp(-xs**2) / np.sqrt(np.pi)) 
 
 
 def zeroth_derivatives(suff_stats, xs):

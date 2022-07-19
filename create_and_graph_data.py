@@ -864,6 +864,76 @@ changing_frequency_centered_theta_1_zero_experiment_mle_limit_and_scorematching_
 experiments.append(changing_frequency_centered_theta_1_zero_experiment_mle_limit_and_scorematching_limit)
 
 
+#### BIMODAL EXPERIMENT ####
+
+
+def bimodal_parameters():
+    #collect inputs from user:
+    n = int(input("Enter n: "))
+    runs = int(input("Enter runs: "))
+    offset_start = float(input("Enter offset start: "))
+    offset_stop = float(input("Enter offset stop: "))
+    num_offsets = int(input("Enter number of offsets: "))
+    
+    #generate parameters:
+    offsets = np.linspace(offset_start, offset_stop, num_offsets)
+
+    parameters_for_tests = []
+    for method in ['mle_limit', 'scorematching_limit']:
+        for offset in offsets:
+            first_suffstat = sufficient_statistics.BimodalPlusErfStat(offset=offset, erfcoeff=0.0)
+            second_suffstat = sufficient_statistics.BimodalPlusErfStat(offset=offset, erfcoeff=1.0)
+            suffstats = [first_suffstat, second_suffstat]
+            parameters_for_tests.append(test_class.TestParameters(suffstats, np.array([1.0, 0.0]), n, method, runs))
+    return parameters_for_tests
+
+
+def ellipses_vs_bimodal_offset(tests):
+    #get limits from user:
+    xmin = float(input("Enter xmin: "))
+    xmax = float(input("Enter xmax: "))
+    ymin = float(input("Enter ymin: "))
+    ymax = float(input("Enter ymax: "))
+
+    #create two sets of axes
+    fig, axes = plt.subplots(1, 2, figsize=(10, 5))
+    axes[0].set_title('MLE (limit formula)')
+    axes[1].set_title('Score Matching (limit formula)')
+    for axis in axes:
+        axis.set_xlim([xmin, xmax])
+        axis.set_ylim([ymin, ymax])
+        axis.set_xlabel('theta_0')
+        axis.set_ylabel('theta_1')
+
+    #calibrate the color scheme
+    min_offset = min([test.parameters.suffstats[0].offset for test in tests])
+    max_offset = max([test.parameters.suffstats[0].offset for test in tests])
+    #add colorbar
+    cmap = plt.get_cmap('jet')
+    norm = colors.Normalize(vmin=min_offset, vmax=max_offset)
+    mapper = cm.ScalarMappable(norm=norm, cmap=cmap)
+    mapper.set_array([])
+    fig.colorbar(mapper, ax=axes[0], label='offset')
+    fig.colorbar(mapper, ax=axes[1], label='offset')
+
+    #plot the data
+    for test in tests:
+        if test.parameters.method == "mle_limit":
+            axis = axes[0]
+        elif test.parameters.method == "scorematching_limit":
+            axis = axes[1]
+        else:
+            raise ValueError("Method not recognized")
+        color = mapper.to_rgba(test.parameters.suffstats[0].offset)
+        ell = graph_ellipse(axis, test.results.mean + test.parameters.theta_star, test.results.cov, color=color)
+        axis.plot([test.parameters.theta_star[0]], [test.parameters.theta_star[1]], '.', color='black')
+    plt.show()
+
+
+changing_bimodal_offset_experiment = Experiment(bimodal_parameters, ellipses_vs_bimodal_offset, "Change the offset of a pair of bimodal sufficient statistics")
+experiments.append(changing_bimodal_offset_experiment)
+
+
 #### USER INTERACTION ####
 
 
